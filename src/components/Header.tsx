@@ -13,15 +13,15 @@ export function Header() {
   const [url, setUrl] = useState(typeof window !== "undefined" ? getBackendUrl() : "");
 
   return (
-    <header className="sticky top-0 z-40 glass border-b border-border/50">
+    <header className="sticky top-0 z-40 border-b border-primary/20 bg-primary/90 backdrop-blur-xl shadow-glow">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link to="/" className="flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-primary shadow-glow">
-            <Brain className="h-5 w-5 text-primary-foreground" />
+          <div className="grid h-9 w-9 place-items-center rounded-lg bg-white/15 shadow-glow">
+            <Brain className="h-5 w-5 text-white" />
           </div>
           <div className="leading-tight">
-            <div className="font-display text-base font-semibold">QGen<span className="text-gradient">.AI</span></div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">NLP Question Paper</div>
+            <div className="font-display text-base font-semibold text-white">QGen<span className="text-white/80">.AI</span></div>
+            <div className="text-[10px] uppercase tracking-widest text-white/60">NLP Question Paper</div>
           </div>
         </Link>
         <nav className="hidden items-center gap-1 md:flex">
@@ -32,7 +32,7 @@ export function Header() {
         </nav>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2 border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white">
               <Settings className="h-4 w-4" /> Backend
             </Button>
           </DialogTrigger>
@@ -72,8 +72,8 @@ function NavLink({ to, children, icon }: { to: string; children: React.ReactNode
   return (
     <Link
       to={to}
-      className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      activeProps={{ className: "bg-muted text-foreground" }}
+      className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+      activeProps={{ className: "bg-white/15 text-white" }}
       activeOptions={{ exact: to === "/" }}
     >
       {icon}

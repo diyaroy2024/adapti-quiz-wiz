@@ -3,15 +3,16 @@ import { Button } from "@/components/ui/button";
 import {
   Brain,
   Languages,
-  Layers3,
+  GraduationCap,
   BarChart3,
-  Sparkles,
+  Cpu,
   ArrowRight,
   Wand2,
-  Target,
-  FileStack,
-  ListChecks,
-  FileText,
+  BookMarked,
+  LayoutTemplate,
+  FileQuestion,
+  FileSearch,
+  SlidersHorizontal,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({ component: Index });

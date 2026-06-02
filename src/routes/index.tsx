@@ -56,14 +56,14 @@ function Index() {
       {/* Differentiators */}
       <section className="grid gap-5 pb-24 md:grid-cols-2 lg:grid-cols-3">
         {[
-          { icon: Layers3, title: "Bloom's Taxonomy Classification", desc: "Every question tagged across all 6 cognitive levels — Remember to Create." },
-          { icon: Target, title: "Course Outcome Mapping", desc: "Auto-map questions to CO1–CO6. NBA & OBE accreditation ready." },
-          { icon: FileStack, title: "Blueprint Generation", desc: "Balanced papers: 30/50/20 difficulty split and unit-wise coverage you control." },
+          { icon: GraduationCap, title: "Bloom's Taxonomy Classification", desc: "Every question tagged across all 6 cognitive levels — Remember to Create." },
+          { icon: BookMarked, title: "Course Outcome Mapping", desc: "Auto-map questions to CO1–CO6. NBA & OBE accreditation ready." },
+          { icon: LayoutTemplate, title: "Blueprint Generation", desc: "Balanced papers: 30/50/20 difficulty split and unit-wise coverage you control." },
           { icon: BarChart3, title: "Educator Analytics", desc: "Bloom distribution, CO attainment, topic coverage, difficulty insights." },
-          { icon: ListChecks, title: "Multiple Question Types", desc: "MCQs, descriptive, fill-in-the-blanks, and true/false — in one paper." },
-          { icon: FileText, title: "PDF-to-Paper Pipeline", desc: "Upload → extract concepts → generate → classify → map → final paper." },
+          { icon: FileQuestion, title: "Multiple Question Types", desc: "MCQs, descriptive, fill-in-the-blanks, and true/false — in one paper." },
+          { icon: FileSearch, title: "PDF-to-Paper Pipeline", desc: "Upload → extract concepts → generate → classify → map → final paper." },
           { icon: Languages, title: "Multilingual", desc: "English, Hindi, Tamil, Telugu, Marathi out of the box." },
-          { icon: Brain, title: "Adaptive Difficulty", desc: "Easy/Medium/Hard mix auto-tunes to total marks and learner level." },
+          { icon: SlidersHorizontal, title: "Adaptive Difficulty", desc: "Easy/Medium/Hard mix auto-tunes to total marks and learner level." },
         ].map((f) => (
           <div key={f.title} className="rounded-2xl bg-gradient-card p-6 shadow-card transition-transform hover:-translate-y-1">
             <div className="grid h-11 w-11 place-items-center rounded-xl bg-primary/15 text-primary">

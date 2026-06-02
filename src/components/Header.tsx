@@ -72,8 +72,8 @@ function NavLink({ to, children, icon }: { to: string; children: React.ReactNode
   return (
     <Link
       to={to}
-      className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      activeProps={{ className: "bg-muted text-foreground" }}
+      className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+      activeProps={{ className: "bg-white/15 text-white" }}
       activeOptions={{ exact: to === "/" }}
     >
       {icon}

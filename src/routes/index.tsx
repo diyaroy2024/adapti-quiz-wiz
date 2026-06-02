@@ -24,7 +24,7 @@ function Index() {
       <section className="relative pt-20 pb-24 md:pt-28 md:pb-32">
         <div className="mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-xs font-medium text-muted-foreground">
-            <Sparkles className="h-3.5 w-3.5 text-accent" /> Intelligent AI-Powered Assessment Platform
+            <Cpu className="h-3.5 w-3.5 text-accent" /> Intelligent AI-Powered Assessment Platform
           </span>
           <h1 className="mt-6 font-display text-5xl font-semibold leading-[1.05] tracking-tight md:text-7xl">
             Beyond question generation. <br />

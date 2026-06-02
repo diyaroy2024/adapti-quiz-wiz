@@ -47,53 +47,53 @@
 :root {
   --radius: 0.75rem;
 
-  /* Clean white base with rich purple accents */
-  --background: oklch(0.99 0.005 295);
-  --foreground: oklch(0.20 0.04 295);
+  /* Clean white base with deep dark violet accents */
+  --background: oklch(0.99 0.005 278);
+  --foreground: oklch(0.18 0.04 278);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.20 0.04 295);
+  --card-foreground: oklch(0.18 0.04 278);
 
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.20 0.04 295);
+  --popover-foreground: oklch(0.18 0.04 278);
 
-  --primary: oklch(0.55 0.22 295);             /* deep purple */
-  --primary-foreground: oklch(0.99 0.005 295);
+  --primary: oklch(0.43 0.20 278);             /* deep dark violet */
+  --primary-foreground: oklch(0.99 0.005 278);
 
-  --secondary: oklch(0.96 0.015 295);
-  --secondary-foreground: oklch(0.30 0.08 295);
+  --secondary: oklch(0.96 0.015 278);
+  --secondary-foreground: oklch(0.28 0.08 278);
 
-  --muted: oklch(0.96 0.012 295);
-  --muted-foreground: oklch(0.50 0.04 295);
+  --muted: oklch(0.96 0.012 278);
+  --muted-foreground: oklch(0.50 0.04 278);
 
-  --accent: oklch(0.70 0.18 300);               /* lighter purple accent */
-  --accent-foreground: oklch(0.99 0.005 295);
+  --accent: oklch(0.63 0.18 280);               /* medium violet accent */
+  --accent-foreground: oklch(0.99 0.005 278);
 
   --destructive: oklch(0.60 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(0.92 0.015 295);
-  --input: oklch(0.94 0.012 295);
-  --ring: oklch(0.55 0.22 295);
+  --border: oklch(0.92 0.015 278);
+  --input: oklch(0.94 0.012 278);
+  --ring: oklch(0.43 0.20 278);
 
-  --chart-1: oklch(0.55 0.22 295);  /* deep purple */
-  --chart-2: oklch(0.70 0.18 300);  /* light purple */
-  --chart-3: oklch(0.45 0.20 285);  /* indigo-purple */
-  --chart-4: oklch(0.78 0.14 310);  /* lavender */
-  --chart-5: oklch(0.35 0.18 290);  /* dark violet */
+  --chart-1: oklch(0.43 0.20 278);  /* deep dark violet */
+  --chart-2: oklch(0.63 0.18 280);  /* medium violet */
+  --chart-3: oklch(0.36 0.18 275);  /* dark indigo-violet */
+  --chart-4: oklch(0.73 0.14 285);  /* soft lavender */
+  --chart-5: oklch(0.30 0.18 278);  /* very dark violet */
 
-  --glow: oklch(0.55 0.22 295 / 0.35);
+  --glow: oklch(0.43 0.20 278 / 0.35);
 
-  --gradient-hero: radial-gradient(circle at 20% 0%, oklch(0.70 0.18 300 / 0.18), transparent 55%),
-                   radial-gradient(circle at 80% 30%, oklch(0.55 0.22 295 / 0.12), transparent 55%),
-                   linear-gradient(180deg, oklch(0.99 0.005 295), oklch(0.97 0.01 295));
-  --gradient-primary: linear-gradient(135deg, oklch(0.55 0.22 295), oklch(0.70 0.18 300));
-  --gradient-card: linear-gradient(160deg, oklch(1 0 0), oklch(0.97 0.012 295));
+  --gradient-hero: radial-gradient(circle at 20% 0%, oklch(0.63 0.18 280 / 0.18), transparent 55%),
+                   radial-gradient(circle at 80% 30%, oklch(0.43 0.20 278 / 0.12), transparent 55%),
+                   linear-gradient(180deg, oklch(0.99 0.005 278), oklch(0.97 0.01 278));
+  --gradient-primary: linear-gradient(135deg, oklch(0.43 0.20 278), oklch(0.63 0.18 280));
+  --gradient-card: linear-gradient(160deg, oklch(1 0 0), oklch(0.97 0.012 278));
 }
 
 .dark {
-  --background: oklch(0.99 0.005 295);
-  --foreground: oklch(0.20 0.04 295);
+  --background: oklch(0.15 0.025 278);
+  --foreground: oklch(0.96 0.01 278);
 }
 
 @layer base {

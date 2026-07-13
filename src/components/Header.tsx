@@ -1,17 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { Brain, FileText, BarChart3, Sparkles, Settings } from "lucide-react";
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { getBackendUrl, setBackendUrl } from "@/lib/api";
-import { toast } from "sonner";
+import { Brain, FileText, BarChart3, Sparkles } from "lucide-react";
 
 export function Header() {
-  const [open, setOpen] = useState(false);
-  const [url, setUrl] = useState(typeof window !== "undefined" ? getBackendUrl() : "");
-
   return (
     <header className="sticky top-0 z-40 border-b border-primary/20 bg-primary/90 backdrop-blur-xl shadow-glow">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">

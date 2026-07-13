@@ -20,39 +20,6 @@ export function Header() {
           <NavLink to="/papers" icon={<FileText className="h-4 w-4" />}>Papers</NavLink>
           <NavLink to="/analytics" icon={<BarChart3 className="h-4 w-4" />}>Analytics</NavLink>
         </nav>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2 border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white">
-              <Settings className="h-4 w-4" /> Backend
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>FastAPI backend URL</DialogTitle></DialogHeader>
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Point this UI to your running FastAPI server (e.g.{" "}
-                <code className="rounded bg-muted px-1">http://localhost:8000</code>).
-                Leave empty to use the built-in demo generator.
-              </p>
-              <Label>Base URL</Label>
-              <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="http://localhost:8000" />
-              <p className="text-xs text-muted-foreground">
-                Expected endpoint: <code>POST /generate</code> with JSON{" "}
-                <code>{`{ text, config, title }`}</code> returning the paper object.
-              </p>
-              <Button
-                className="w-full bg-gradient-primary text-primary-foreground"
-                onClick={() => {
-                  setBackendUrl(url);
-                  toast.success(url ? "Backend connected" : "Using demo generator");
-                  setOpen(false);
-                }}
-              >
-                Save
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </header>
   );

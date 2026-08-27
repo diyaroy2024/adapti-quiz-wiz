@@ -13,6 +13,8 @@ export function PaperView({ paper }: { paper: GeneratedPaper }) {
             <Badge variant="outline">{TYPE_LABEL[q.type]}</Badge>
             <Badge variant="outline" className="capitalize">{q.bloom}</Badge>
             <Badge variant="outline" className="capitalize">{q.difficulty}</Badge>
+            {q.topic && <Badge variant="secondary">{q.topic}</Badge>}
+            {q.co && <Badge className="bg-primary/10 text-primary hover:bg-primary/15">{q.co}</Badge>}
             <span className="ml-auto font-mono text-muted-foreground">{q.marks} marks</span>
           </div>
           <p className="text-base leading-relaxed">{q.question}</p>

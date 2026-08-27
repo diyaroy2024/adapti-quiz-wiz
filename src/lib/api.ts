@@ -3,9 +3,11 @@ import type { GeneratedPaper, PaperConfig, GeneratedQuestion } from "./types";
 const STORAGE_KEY = "qpgen_backend_url";
 const PAPERS_KEY = "qpgen_papers";
 
+/** FastAPI base URL: VITE_BACKEND_URL (build-time) or a localStorage override. */
 export function getBackendUrl(): string {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem(STORAGE_KEY) ?? "";
+  const env = (import.meta.env.VITE_BACKEND_URL as string | undefined) ?? "";
+  if (typeof window === "undefined") return env.trim();
+  return (localStorage.getItem(STORAGE_KEY) || env).trim();
 }
 export function setBackendUrl(url: string) {
   localStorage.setItem(STORAGE_KEY, url.trim());

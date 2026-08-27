@@ -37,6 +37,10 @@ export interface GeneratedQuestion {
   options?: string[];
   answer: string;
   keywords?: string[];
+  /** Syllabus topic / unit the question was generated from */
+  topic?: string;
+  /** Mapped Course Outcome, e.g. "CO1" */
+  co?: string;
 }
 
 export interface PaperConfig {

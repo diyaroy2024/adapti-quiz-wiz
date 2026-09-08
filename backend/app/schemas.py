@@ -56,3 +56,5 @@ class GeneratedPaper(BaseModel):
     config: PaperConfig
     questions: List[GeneratedQuestion]
     sourcePreview: str
+    # Post-processing transparency: drafted vs kept, and why drafts were dropped.
+    qualityReport: Optional[dict] = None

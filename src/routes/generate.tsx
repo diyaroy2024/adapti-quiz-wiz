@@ -46,8 +46,9 @@ function GeneratePage() {
   }
 
   async function onGenerate() {
-    if (text.trim().length < 50) {
-      toast.error("Add at least 50 characters of source text");
+    const check = validateSource(text);
+    if (!check.ok) {
+      toast.error("Irrelevant source material", { description: check.reason });
       return;
     }
     if (bloom.length === 0 || types.length === 0) {

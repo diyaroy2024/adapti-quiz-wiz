@@ -14,6 +14,7 @@ import { Upload, Wand2, FileText, Loader2, Download } from "lucide-react";
 import { BLOOM_LEVELS, LANGUAGES, type BloomLevel, type Language, type PaperConfig, type QuestionType, type GeneratedPaper } from "@/lib/types";
 import { extractText } from "@/lib/file-extract";
 import { generatePaper } from "@/lib/api";
+import { validateSource } from "@/lib/validate-source";
 import { PaperView } from "@/components/PaperView";
 
 export const Route = createFileRoute("/generate")({ component: GeneratePage });
@@ -46,8 +47,9 @@ function GeneratePage() {
   }
 
   async function onGenerate() {
-    if (text.trim().length < 50) {
-      toast.error("Add at least 50 characters of source text");
+    const check = validateSource(text);
+    if (!check.ok) {
+      toast.error("Irrelevant source material", { description: check.reason });
       return;
     }
     if (bloom.length === 0 || types.length === 0) {

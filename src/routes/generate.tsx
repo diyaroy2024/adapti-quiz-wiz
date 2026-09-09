@@ -14,6 +14,7 @@ import { Upload, Wand2, FileText, Loader2, Download } from "lucide-react";
 import { BLOOM_LEVELS, LANGUAGES, type BloomLevel, type Language, type PaperConfig, type QuestionType, type GeneratedPaper } from "@/lib/types";
 import { extractText } from "@/lib/file-extract";
 import { generatePaper } from "@/lib/api";
+import { validateSource } from "@/lib/validate-source";
 import { PaperView } from "@/components/PaperView";
 
 export const Route = createFileRoute("/generate")({ component: GeneratePage });

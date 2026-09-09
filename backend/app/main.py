@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .generator import build_paper
 from .schemas import GeneratedPaper, GenerateRequest
+from .validate import validate_source
 
 app = FastAPI(
     title="NLP Question Paper Generation API",

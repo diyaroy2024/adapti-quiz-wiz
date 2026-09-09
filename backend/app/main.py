@@ -88,11 +88,9 @@ def health() -> dict:
 
 @app.post("/generate", response_model=GeneratedPaper)
 def generate(req: GenerateRequest) -> GeneratedPaper:
-    if len(req.text.strip()) < 80:
-        raise HTTPException(
-            status_code=422,
-            detail="Provide at least ~80 characters of source material to generate from.",
-        )
+    problem = validate_source(req.text)
+    if problem:
+        raise HTTPException(status_code=422, detail=problem)
     try:
         paper = build_paper(req)
     except Exception as exc:  # surface model failures clearly to the UI

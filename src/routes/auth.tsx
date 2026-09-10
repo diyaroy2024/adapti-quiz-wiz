@@ -76,12 +76,6 @@ function AuthPage() {
         </p>
       </div>
 
-      {!backendConfigured && (
-        <div className="mb-6 rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-          Accounts run on the Python service. Start it and set <code>VITE_BACKEND_URL</code>; until then papers are
-          kept in this browser only.
-        </div>
-      )}
 
       <div className="rounded-2xl bg-gradient-card p-6 shadow-card">
         <Tabs defaultValue="in">

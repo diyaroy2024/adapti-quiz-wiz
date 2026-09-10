@@ -6,7 +6,19 @@ import { BLOOM_LEVELS, LANGUAGES, type GeneratedPaper } from "@/lib/types";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, RadialBarChart, RadialBar, Legend } from "recharts";
 import { FileText, Brain, Layers3, Globe2 } from "lucide-react";
 
-export const Route = createFileRoute("/analytics")({ component: AnalyticsPage });
+export const Route = createFileRoute("/analytics")({
+  head: () => ({
+    meta: [
+      { title: "Assessment analytics — QGen.AI" },
+      { name: "description", content: "Bloom coverage, question-type mix, difficulty balance and language spread across your generated papers." },
+      { property: "og:title", content: "Assessment analytics — QGen.AI" },
+      { property: "og:description", content: "Bloom coverage, question-type mix, difficulty balance and language spread across your generated papers." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: AnalyticsPage,
+});
 
 function AnalyticsPage() {
   const { user } = useAuth();

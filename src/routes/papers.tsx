@@ -9,7 +9,19 @@ import { Badge } from "@/components/ui/badge";
 import { FileText, Trash2, Wand2 } from "lucide-react";
 import { PaperView } from "@/components/PaperView";
 
-export const Route = createFileRoute("/papers")({ component: PapersPage });
+export const Route = createFileRoute("/papers")({
+  head: () => ({
+    meta: [
+      { title: "Saved question papers — QGen.AI" },
+      { name: "description", content: "Browse, review and delete the question papers saved to your teacher account." },
+      { property: "og:title", content: "Saved question papers — QGen.AI" },
+      { property: "og:description", content: "Browse, review and delete the question papers saved to your teacher account." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: PapersPage,
+});
 
 function PapersPage() {
   const { user } = useAuth();

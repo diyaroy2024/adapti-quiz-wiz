@@ -17,7 +17,19 @@ import { generatePaper } from "@/lib/api";
 import { validateSource } from "@/lib/validate-source";
 import { PaperView } from "@/components/PaperView";
 
-export const Route = createFileRoute("/generate")({ component: GeneratePage });
+export const Route = createFileRoute("/generate")({
+  head: () => ({
+    meta: [
+      { title: "Generate a question paper — QGen.AI" },
+      { name: "description", content: "Paste text or upload a PDF/DOCX and generate a Bloom-mapped, adaptive, multilingual question paper in seconds." },
+      { property: "og:title", content: "Generate a question paper — QGen.AI" },
+      { property: "og:description", content: "Paste text or upload a PDF/DOCX and generate a Bloom-mapped, adaptive, multilingual question paper in seconds." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: GeneratePage,
+});
 
 function GeneratePage() {
   const [title, setTitle] = useState("Mid-semester Exam");

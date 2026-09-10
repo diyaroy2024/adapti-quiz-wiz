@@ -15,7 +15,19 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
-export const Route = createFileRoute("/")({ component: Index });
+export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "QGen.AI — NLP Question Paper Generator" },
+      { name: "description", content: "Turn syllabus text, PDFs or DOCX into Bloom's-taxonomy-mapped, multilingual, adaptive question papers with NLP." },
+      { property: "og:title", content: "QGen.AI — NLP Question Paper Generator" },
+      { property: "og:description", content: "Turn syllabus text, PDFs or DOCX into Bloom's-taxonomy-mapped, multilingual, adaptive question papers with NLP." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: Index,
+});
 
 function Index() {
   return (

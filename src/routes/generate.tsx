@@ -16,10 +16,25 @@ import { extractText } from "@/lib/file-extract";
 import { generatePaper } from "@/lib/api";
 import { validateSource } from "@/lib/validate-source";
 import { PaperView } from "@/components/PaperView";
+import { useAuth } from "@/lib/auth";
+import { Link } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/generate")({ component: GeneratePage });
+export const Route = createFileRoute("/generate")({
+  head: () => ({
+    meta: [
+      { title: "Generate a question paper — QGen.AI" },
+      { name: "description", content: "Paste text or upload a PDF/DOCX and generate a Bloom-mapped, adaptive, multilingual question paper in seconds." },
+      { property: "og:title", content: "Generate a question paper — QGen.AI" },
+      { property: "og:description", content: "Paste text or upload a PDF/DOCX and generate a Bloom-mapped, adaptive, multilingual question paper in seconds." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: GeneratePage,
+});
 
 function GeneratePage() {
+  const { user, backendConfigured } = useAuth();
   const [title, setTitle] = useState("Mid-semester Exam");
   const [text, setText] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
@@ -47,6 +62,10 @@ function GeneratePage() {
   }
 
   async function onGenerate() {
+    if (backendConfigured && !user) {
+      toast.error("Sign in to generate and save papers");
+      return;
+    }
     const check = validateSource(text);
     if (!check.ok) {
       toast.error("Irrelevant source material", { description: check.reason });
@@ -85,6 +104,19 @@ function GeneratePage() {
         <h1 className="text-3xl font-semibold md:text-4xl">Generate a paper</h1>
         <p className="mt-1 text-muted-foreground">Provide source material, set constraints, generate.</p>
       </div>
+
+      {backendConfigured && !user && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed border-border p-4">
+          <p className="text-sm text-muted-foreground">
+            Sign in to generate papers and keep them saved to your account.
+          </p>
+          <Link to="/auth">
+            <Button size="sm" className="bg-gradient-primary text-primary-foreground">Sign in</Button>
+          </Link>
+        </div>
+      )}
+
+
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         {/* LEFT — Source + config */}

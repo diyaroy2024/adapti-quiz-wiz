@@ -1,23 +1,57 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { listPapers, deletePaper } from "@/lib/api";
+import { listPapers, deletePaper, fetchPapers, deletePaperRemote } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import { toast } from "sonner";
 import type { GeneratedPaper } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Trash2, Wand2 } from "lucide-react";
 import { PaperView } from "@/components/PaperView";
 
-export const Route = createFileRoute("/papers")({ component: PapersPage });
+export const Route = createFileRoute("/papers")({
+  head: () => ({
+    meta: [
+      { title: "Saved question papers — QGen.AI" },
+      { name: "description", content: "Browse, review and delete the question papers saved to your teacher account." },
+      { property: "og:title", content: "Saved question papers — QGen.AI" },
+      { property: "og:description", content: "Browse, review and delete the question papers saved to your teacher account." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: PapersPage,
+});
 
 function PapersPage() {
+  const { user } = useAuth();
   const [papers, setPapers] = useState<GeneratedPaper[]>([]);
   const [open, setOpen] = useState<string | null>(null);
 
-  useEffect(() => setPapers(listPapers()), []);
+  useEffect(() => {
+    if (user) {
+      fetchPapers()
+        .then(setPapers)
+        .catch((e) => {
+          toast.error(e.message ?? "Could not load your saved papers");
+          setPapers(listPapers());
+        });
+    } else {
+      setPapers(listPapers());
+    }
+  }, [user]);
 
-  function remove(id: string) {
+  async function remove(id: string) {
+    if (user) {
+      try {
+        await deletePaperRemote(id);
+      } catch (e: any) {
+        toast.error(e.message ?? "Could not delete that paper");
+        return;
+      }
+    }
     deletePaper(id);
-    setPapers(listPapers());
+    setPapers((prev) => prev.filter((p) => p.id !== id));
   }
 
   return (
@@ -25,7 +59,7 @@ function PapersPage() {
       <div className="mb-8 flex items-end justify-between">
         <div>
           <h1 className="text-3xl font-semibold md:text-4xl">Saved papers</h1>
-          <p className="mt-1 text-muted-foreground">Stored locally. Connect a backend to persist to MongoDB.</p>
+          <p className="mt-1 text-muted-foreground">{user ? `Saved to your account (${user.email}).` : "Stored in this browser. Sign in to keep them in your account."}</p>
         </div>
         <Link to="/generate">
           <Button className="gap-2 bg-gradient-primary text-primary-foreground"><Wand2 className="h-4 w-4" />New paper</Button>

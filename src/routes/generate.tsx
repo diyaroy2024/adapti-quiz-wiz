@@ -16,6 +16,8 @@ import { extractText } from "@/lib/file-extract";
 import { generatePaper } from "@/lib/api";
 import { validateSource } from "@/lib/validate-source";
 import { PaperView } from "@/components/PaperView";
+import { useAuth } from "@/lib/auth";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/generate")({
   head: () => ({
@@ -32,6 +34,7 @@ export const Route = createFileRoute("/generate")({
 });
 
 function GeneratePage() {
+  const { user, backendConfigured } = useAuth();
   const [title, setTitle] = useState("Mid-semester Exam");
   const [text, setText] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
@@ -59,6 +62,10 @@ function GeneratePage() {
   }
 
   async function onGenerate() {
+    if (backendConfigured && !user) {
+      toast.error("Sign in to generate and save papers");
+      return;
+    }
     const check = validateSource(text);
     if (!check.ok) {
       toast.error("Irrelevant source material", { description: check.reason });

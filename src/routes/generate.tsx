@@ -105,6 +105,19 @@ function GeneratePage() {
         <p className="mt-1 text-muted-foreground">Provide source material, set constraints, generate.</p>
       </div>
 
+      {backendConfigured && !user && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed border-border p-4">
+          <p className="text-sm text-muted-foreground">
+            Sign in to generate papers and keep them saved to your account.
+          </p>
+          <Link to="/auth">
+            <Button size="sm" className="bg-gradient-primary text-primary-foreground">Sign in</Button>
+          </Link>
+        </div>
+      )}
+
+
+
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         {/* LEFT — Source + config */}
         <div className="space-y-6">

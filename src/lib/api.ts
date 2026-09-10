@@ -13,20 +13,43 @@ export function setBackendUrl(url: string) {
   localStorage.setItem(STORAGE_KEY, url.trim());
 }
 
+function token(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("qpgen_token");
+}
+function authHeaders(): Record<string, string> {
+  const t = token();
+  return t ? { Authorization: `Bearer ${t}` } : {};
+}
+function apiBase(): string {
+  return getBackendUrl().replace(/\/$/, "");
+}
+async function apiGet<T>(path: string): Promise<T> {
+  const res = await fetch(`${apiBase()}${path}`, { headers: authHeaders() });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error((data as any)?.detail ?? `Request failed (${res.status})`);
+  return data as T;
+}
+
 /** POST {text, config} -> GeneratedPaper. Falls back to mock generator. */
 export async function generatePaper(
   source: string,
   config: PaperConfig,
   title: string,
 ): Promise<GeneratedPaper> {
-  const url = getBackendUrl();
+  const url = apiBase();
   if (url) {
-    const res = await fetch(`${url.replace(/\/$/, "")}/generate`, {
+    const res = await fetch(`${url}/generate`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify({ text: source, config, title }),
     });
-    if (!res.ok) throw new Error(`Backend ${res.status}: ${await res.text()}`);
+    if (!res.ok) {
+      const data = await res.json().catch(() => null);
+      const detail = (data as any)?.detail;
+      if (res.status === 401) throw new Error(detail ?? "Sign in to generate and save papers.");
+      throw new Error(detail ?? `Backend ${res.status}`);
+    }
     const paper = (await res.json()) as GeneratedPaper;
     savePaper(paper);
     return paper;
@@ -35,6 +58,39 @@ export async function generatePaper(
   const paper = mockGenerate(source, config, title);
   savePaper(paper);
   return paper;
+}
+
+/** Papers from the database for the signed-in account. */
+export function fetchPapers(): Promise<GeneratedPaper[]> {
+  return apiGet<GeneratedPaper[]>("/papers");
+}
+
+/** Uploaded / pasted source history for the signed-in account. */
+export function fetchDocuments(): Promise<
+  { id: string; name: string; chars: number; preview: string; createdAt: string }[]
+> {
+  return apiGet("/documents");
+}
+
+export interface AnalyticsSummary {
+  papers: number;
+  questions: number;
+  totalMarks?: number;
+  bloom: Record<string, number>;
+  types: Record<string, number>;
+  difficulty: Record<string, number>;
+  languages: Record<string, number>;
+}
+export function fetchAnalytics(): Promise<AnalyticsSummary> {
+  return apiGet<AnalyticsSummary>("/analytics");
+}
+
+export async function deletePaperRemote(id: string): Promise<void> {
+  const res = await fetch(`${apiBase()}/papers/${id}`, { method: "DELETE", headers: authHeaders() });
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error((data as any)?.detail ?? `Delete failed (${res.status})`);
+  }
 }
 
 export function listPapers(): GeneratedPaper[] {
@@ -46,7 +102,7 @@ export function listPapers(): GeneratedPaper[] {
   }
 }
 export function savePaper(p: GeneratedPaper) {
-  const all = listPapers();
+  const all = listPapers().filter((x) => x.id !== p.id);
   all.unshift(p);
   localStorage.setItem(PAPERS_KEY, JSON.stringify(all.slice(0, 50)));
 }

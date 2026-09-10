@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { listPapers } from "@/lib/api";
+import { listPapers, fetchPapers } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { BLOOM_LEVELS, LANGUAGES, type GeneratedPaper } from "@/lib/types";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, RadialBarChart, RadialBar, Legend } from "recharts";
 import { FileText, Brain, Layers3, Globe2 } from "lucide-react";
@@ -8,8 +9,12 @@ import { FileText, Brain, Layers3, Globe2 } from "lucide-react";
 export const Route = createFileRoute("/analytics")({ component: AnalyticsPage });
 
 function AnalyticsPage() {
+  const { user } = useAuth();
   const [papers, setPapers] = useState<GeneratedPaper[]>([]);
-  useEffect(() => setPapers(listPapers()), []);
+  useEffect(() => {
+    if (user) fetchPapers().then(setPapers).catch(() => setPapers(listPapers()));
+    else setPapers(listPapers());
+  }, [user]);
 
   const stats = useMemo(() => compute(papers), [papers]);
 
@@ -17,7 +22,7 @@ function AnalyticsPage() {
     <div className="mx-auto max-w-7xl px-6 py-10">
       <div className="mb-8">
         <h1 className="text-3xl font-semibold md:text-4xl">Analytics</h1>
-        <p className="mt-1 text-muted-foreground">Bloom coverage, type mix, difficulty across all generated papers.</p>
+        <p className="mt-1 text-muted-foreground">Bloom coverage, type mix, difficulty and languages across {user ? "your saved" : "locally saved"} papers.</p>
       </div>
 
       {papers.length === 0 ? (

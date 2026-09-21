@@ -39,9 +39,31 @@ uvicorn app.main:app --reload --port 8000
 - Swagger docs: http://localhost:8000/docs
 - Health check: http://localhost:8000/health
 
+## 2.5 MongoDB Atlas setup (free, 10 minutes)
+
+1. Go to https://www.mongodb.com/cloud/atlas/register and create a free account.
+2. **Create a cluster** → choose **M0 / Free** → any cloud + region near you → Create.
+3. **Database Access** (left menu) → *Add New Database User* → Authentication:
+   Password → username e.g. `qpgen` → click *Autogenerate Secure Password* and
+   **copy it** → Role: *Read and write to any database* → Add User.
+4. **Network Access** → *Add IP Address* → *Allow access from anywhere*
+   (`0.0.0.0/0`) for local development → Confirm.
+5. **Clusters → Connect → Drivers → Python** → copy the connection string. It
+   looks like:
+   `mongodb+srv://qpgen:<db_password>@cluster0.abcde.mongodb.net/?retryWrites=true&w=majority`
+6. In `backend/`, copy `.env.example` to `.env` and paste the string into
+   `MONGODB_URI`, replacing `<db_password>` with the password from step 3.
+   Set `JWT_SECRET` to any long random string (`openssl rand -hex 32`).
+7. Restart uvicorn. `GET http://localhost:8000/health` should now report the
+   database as ready, and `/auth/status` should return `accountsEnabled: true`.
+
+The `.env` file is git-ignored — credentials never reach the frontend or the repo.
+Collections (`users`, `documents`, `questions`, `papers`, `analytics`) and their
+indexes are created automatically on the first connection.
+
 ## 3. Environment variables (all optional)
 
-Create `backend/.env` or export them in your shell:
+Copy `backend/.env.example` to `backend/.env` and fill it in:
 
 ```bash
 QG_MODEL=valhalla/t5-base-qg-hl        # any T5/BART question-generation checkpoint

@@ -17,27 +17,32 @@ from __future__ import annotations
 import os
 from typing import Any, Optional
 
-_URI = os.getenv("MONGODB_URI", "")
-_DB_NAME = os.getenv("MONGODB_DB", "qpgen")
+from . import env as _env  # noqa: F401  (loads backend/.env)
 
 _db: Optional[Any] = None
 _tried = False
 
 
+def _uri() -> str:
+    return os.getenv("MONGODB_URI", "").strip()
+
+
 def get_db() -> Optional[Any]:
     """Lazily connect. Returns None when not configured or unreachable."""
     global _db, _tried
-    if _db is not None or (_tried and not _URI):
+    uri = _uri()
+    if _db is not None or (_tried and not uri):
         return _db
     _tried = True
-    if not _URI:
+    if not uri:
+        print("[mongo] MONGODB_URI not set — accounts and history disabled")
         return None
     try:
         from pymongo import ASCENDING, DESCENDING, MongoClient
 
-        client = MongoClient(_URI, serverSelectionTimeoutMS=2500)
+        client = MongoClient(uri, serverSelectionTimeoutMS=5000)
         client.admin.command("ping")
-        db = client[_DB_NAME]
+        db = client[os.getenv("MONGODB_DB", "qpgen")]
         db["users"].create_index([("email", ASCENDING)], unique=True)
         db["papers"].create_index([("id", ASCENDING)], unique=True)
         db["papers"].create_index([("userId", ASCENDING), ("createdAt", DESCENDING)])

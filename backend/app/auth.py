@@ -23,6 +23,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr, Field
 
+from . import env as _env  # noqa: F401  (loads backend/.env)
 from .db import collection, db_ready
 
 JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-me")

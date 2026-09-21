@@ -42,7 +42,7 @@ def get_db() -> Optional[Any]:
 
         client = MongoClient(uri, serverSelectionTimeoutMS=5000)
         client.admin.command("ping")
-        db = client[_DB_NAME]
+        db = client[os.getenv("MONGODB_DB", "qpgen")]
         db["users"].create_index([("email", ASCENDING)], unique=True)
         db["papers"].create_index([("id", ASCENDING)], unique=True)
         db["papers"].create_index([("userId", ASCENDING), ("createdAt", DESCENDING)])

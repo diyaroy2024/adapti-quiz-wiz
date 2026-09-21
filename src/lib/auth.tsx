@@ -23,7 +23,10 @@ function setToken(t: string | null) {
 
 function base() {
   const url = getBackendUrl();
-  if (!url) throw new Error("Accounts need the Python backend running. Set VITE_BACKEND_URL.");
+  if (!url)
+    throw new Error(
+      "Accounts are handled by your Python service. Run it on your computer (uvicorn app.main:app --port 8000) and open the app at http://localhost:8080.",
+    );
   return url.replace(/\/$/, "");
 }
 

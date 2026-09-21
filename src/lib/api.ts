@@ -3,11 +3,19 @@ import type { GeneratedPaper, PaperConfig, GeneratedQuestion } from "./types";
 const STORAGE_KEY = "qpgen_backend_url";
 const PAPERS_KEY = "qpgen_papers";
 
-/** FastAPI base URL: VITE_BACKEND_URL (build-time) or a localStorage override. */
+/**
+ * FastAPI base URL. Order: localStorage override -> VITE_BACKEND_URL ->
+ * http://localhost:8000 when the app itself runs on localhost (so a cloned
+ * repo works with no .env at all).
+ */
 export function getBackendUrl(): string {
-  const env = (import.meta.env.VITE_BACKEND_URL as string | undefined) ?? "";
-  if (typeof window === "undefined") return env.trim();
-  return (localStorage.getItem(STORAGE_KEY) || env).trim();
+  const env = ((import.meta.env.VITE_BACKEND_URL as string | undefined) ?? "").trim();
+  if (typeof window === "undefined") return env;
+  const override = (localStorage.getItem(STORAGE_KEY) ?? "").trim();
+  if (override) return override;
+  if (env) return env;
+  const host = window.location.hostname;
+  return host === "localhost" || host === "127.0.0.1" ? "http://localhost:8000" : "";
 }
 export function setBackendUrl(url: string) {
   localStorage.setItem(STORAGE_KEY, url.trim());

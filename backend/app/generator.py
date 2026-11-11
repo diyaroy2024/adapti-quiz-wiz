@@ -21,6 +21,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import List
 
+from .assessment import allocate_marks, analyze_paper, evidence_status, source_reference
 from .bloom import difficulty_for, marks_for
 from .nlp import (
     SemanticIndex,
@@ -75,6 +76,10 @@ def build_paper(req: GenerateRequest) -> GeneratedPaper:
     sentences = analysis.important_sentences(60) or analysis.texts
     index = SemanticIndex(sentences, targets, cfg.topicHint)
     classifier = get_bloom_classifier()
+    source_topic_weights = {}
+    for concept in concepts:
+        topic, _ = index.topic_for(concept)
+        source_topic_weights[topic] = source_topic_weights.get(topic, 0) + 1
 
     target_count = max(5, min(25, cfg.totalMarks // 2))
     draft_count = int(target_count * OVERSHOOT) + 2
@@ -128,6 +133,7 @@ def build_paper(req: GenerateRequest) -> GeneratedPaper:
                 keywords=[concept],
                 topic=topic,
                 co=f"CO{unit + 1}",
+                sourceEvidence=context,
             )
         )
 
@@ -150,7 +156,21 @@ def build_paper(req: GenerateRequest) -> GeneratedPaper:
         selected.append(match)
     if not selected:
         selected = kept[:target_count]
+    allocate_marks(selected, cfg.totalMarks)
     report["final"] = len(selected)
+
+    # Verify the original English answer before any requested translation.
+    for q in selected:
+        evidence = q.sourceEvidence or ""
+        q.sourceReference = source_reference(
+            evidence,
+            req.text,
+            req.sourceName,
+            req.sourcePages,
+        )
+        q.evidenceStatus, q.evidenceWarning = evidence_status(q, evidence, embedder)
+
+    coverage_report = analyze_paper(selected, cfg, source_topic_weights)
 
     # ---- multilingual output (English source verified first, then translated) #
     for q in selected:
@@ -167,4 +187,5 @@ def build_paper(req: GenerateRequest) -> GeneratedPaper:
         questions=selected,
         sourcePreview=analysis.clean_text[:240],
         qualityReport=report,
+        coverageReport=coverage_report,
     )

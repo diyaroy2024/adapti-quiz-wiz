@@ -1,0 +1,4 @@
+- [ ] Add source page/section references and evidence verification to generated questions.
+- [ ] Analyze topic coverage, difficulty balance, and examination blueprint compliance.
+- [ ] Show source evidence and assessment results on generated and saved papers.
+- [ ] Test assessment calculations and verify the application preview.

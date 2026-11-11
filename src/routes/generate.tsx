@@ -11,14 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Wand2, FileText, Loader2, Download } from "lucide-react";
-import { BLOOM_LEVELS, LANGUAGES, type BloomLevel, type Language, type PaperConfig, type QuestionType, type GeneratedPaper } from "@/lib/types";
+import { BLOOM_LEVELS, LANGUAGES, type BloomLevel, type Language, type PaperConfig, type QuestionType, type GeneratedPaper, type SourcePage } from "@/lib/types";
 import { extractDocument } from "@/lib/file-extract";
 import { generatePaper } from "@/lib/api";
 import { validateSource } from "@/lib/validate-source";
 import { PaperView } from "@/components/PaperView";
 import { useAuth } from "@/lib/auth";
 import { Link } from "@tanstack/react-router";
-import type { SourcePage } from "@/lib/types";
 
 export const Route = createFileRoute("/generate")({
   head: () => ({

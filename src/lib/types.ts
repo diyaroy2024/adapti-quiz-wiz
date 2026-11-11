@@ -41,6 +41,49 @@ export interface GeneratedQuestion {
   topic?: string;
   /** Mapped Course Outcome, e.g. "CO1" */
   co?: string;
+  sourceReference?: string;
+  sourceEvidence?: string;
+  evidenceStatus?: "direct" | "partial" | "unsupported";
+  evidenceWarning?: string;
+}
+
+export interface SourcePage {
+  page: number;
+  text: string;
+}
+
+export interface CoverageTopic {
+  topic: string;
+  questionCount: number;
+  marks: number;
+  sourceSharePercent: number;
+  paperSharePercent: number;
+}
+
+export interface CoverageReport {
+  topicsCovered: CoverageTopic[];
+  importantTopicsMissing: string[];
+  overrepresentedTopics: CoverageTopic[];
+  syllabusCoveragePercent: number;
+  coverageNote: string;
+  difficultyBalance: {
+    requestedPercent: Record<string, number>;
+    actualPercent: Record<string, number>;
+    balanced: boolean;
+  };
+  blueprint: {
+    requestedTotalMarks: number;
+    actualTotalMarks: number;
+    totalMarksMatch: boolean;
+    requestedBloomLevels: BloomLevel[];
+    coveredBloomLevels: BloomLevel[];
+    missingBloomLevels: BloomLevel[];
+    requestedQuestionTypes: QuestionType[];
+    coveredQuestionTypes: QuestionType[];
+    missingQuestionTypes: QuestionType[];
+    satisfied: boolean;
+    issues: string[];
+  };
 }
 
 export interface PaperConfig {
@@ -60,4 +103,5 @@ export interface GeneratedPaper {
   config: PaperConfig;
   questions: GeneratedQuestion[];
   sourcePreview: string;
+  coverageReport?: CoverageReport;
 }

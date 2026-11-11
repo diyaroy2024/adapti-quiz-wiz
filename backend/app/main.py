@@ -128,6 +128,7 @@ def generate(req: GenerateRequest, user: Dict[str, Any] = Depends(current_user))
                     "chars": len(req.text),
                     "preview": req.text[:300],
                     "text": req.text,
+                    "sourcePages": [page.model_dump() for page in (req.sourcePages or [])],
                     "createdAt": _now(),
                 }
             )

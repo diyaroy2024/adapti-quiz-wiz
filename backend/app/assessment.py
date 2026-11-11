@@ -54,7 +54,10 @@ def evidence_status(
     source = _normal(evidence)
     answer = _normal(question.answer)
     keywords = [_normal(word) for word in (question.keywords or []) if word.strip()]
-    if (answer and (answer in source or source in answer)) or any(word in source for word in keywords):
+    if answer and (answer in source or source in answer):
+        return "direct", None
+
+    if question.type != "descriptive" and any(word in source for word in keywords):
         return "direct", None
 
     answer_terms = _tokens(question.answer) | set().union(*(_tokens(word) for word in keywords))

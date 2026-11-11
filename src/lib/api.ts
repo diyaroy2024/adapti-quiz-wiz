@@ -1,4 +1,4 @@
-import type { GeneratedPaper, PaperConfig, GeneratedQuestion } from "./types";
+import type { GeneratedPaper, PaperConfig, GeneratedQuestion, SourcePage } from "./types";
 
 const STORAGE_KEY = "qpgen_backend_url";
 const PAPERS_KEY = "qpgen_papers";
@@ -44,13 +44,15 @@ export async function generatePaper(
   source: string,
   config: PaperConfig,
   title: string,
+  sourceName?: string,
+  sourcePages?: SourcePage[],
 ): Promise<GeneratedPaper> {
   const url = apiBase();
   if (url) {
     const res = await fetch(`${url}/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: JSON.stringify({ text: source, config, title }),
+      body: JSON.stringify({ text: source, config, title, sourceName, sourcePages }),
     });
     if (!res.ok) {
       const data = await res.json().catch(() => null);
@@ -63,7 +65,7 @@ export async function generatePaper(
     return paper;
   }
   // Local mock — deterministic-ish demo content
-  const paper = mockGenerate(source, config, title);
+  const paper = mockGenerate(source, config, title, sourceName, sourcePages);
   savePaper(paper);
   return paper;
 }
@@ -126,6 +128,8 @@ function mockGenerate(
   source: string,
   config: PaperConfig,
   title: string,
+  sourceName?: string,
+  sourcePages?: SourcePage[],
 ): GeneratedPaper {
   const sentences = source
     .replace(/\s+/g, " ")
@@ -193,6 +197,20 @@ function mockGenerate(
     }
   }
 
+  questions.forEach((question, index) => {
+    const evidence = sentences[index % Math.max(1, sentences.length)] ?? source.slice(0, 300);
+    const topic = keywords[index % Math.max(1, keywords.length)] ?? "General";
+    question.topic ??= topic;
+    question.keywords ??= [topic];
+    question.sourceEvidence = evidence;
+    const pageMatch = sourcePages?.find((page) => page.text.toLowerCase().includes(evidence.toLowerCase()));
+    question.sourceReference = pageMatch
+      ? `${sourceName ? `${sourceName} · ` : ""}PDF page ${pageMatch.page}`
+      : `${sourceName ? `${sourceName} · ` : "Pasted text · "}paragraph ${index + 1}`;
+    question.evidenceStatus = "partial";
+    question.evidenceWarning = "Offline generation cannot verify the expected answer against the source. Review this question.";
+  });
+
   return {
     id: crypto.randomUUID(),
     title: title || "Untitled Paper",
@@ -200,6 +218,77 @@ function mockGenerate(
     config,
     questions,
     sourcePreview: source.slice(0, 240),
+    coverageReport: mockCoverageReport(questions, config, keywords),
+  };
+}
+
+function mockCoverageReport(questions: GeneratedQuestion[], config: PaperConfig, sourceTopics: string[]) {
+  const counts = new Map<string, number>();
+  questions.forEach((question) => {
+    if (question.topic) counts.set(question.topic, (counts.get(question.topic) ?? 0) + 1);
+  });
+  const total = questions.length || 1;
+  const actual = {
+    easy: questions.filter((q) => q.difficulty === "easy").length / total * 100,
+    medium: questions.filter((q) => q.difficulty === "medium").length / total * 100,
+    hard: questions.filter((q) => q.difficulty === "hard").length / total * 100,
+  };
+  const requestedTotal = config.difficultyMix.easy + config.difficultyMix.medium + config.difficultyMix.hard || 1;
+  const requested = {
+    easy: config.difficultyMix.easy / requestedTotal * 100,
+    medium: config.difficultyMix.medium / requestedTotal * 100,
+    hard: config.difficultyMix.hard / requestedTotal * 100,
+  };
+  const topicList = [...new Set(sourceTopics)];
+  const topicWeight = topicList.length ? 100 / topicList.length : 0;
+  const topicsCovered = topicList.flatMap((topic) => {
+    const questionCount = counts.get(topic) ?? 0;
+    if (!questionCount) return [];
+    return [{
+      topic,
+      questionCount,
+      marks: questions.filter((q) => q.topic === topic).reduce((sum, q) => sum + q.marks, 0),
+      sourceSharePercent: topicWeight,
+      paperSharePercent: questionCount / total * 100,
+    }];
+  });
+  const importantTopicsMissing = topicList.filter((topic) => !counts.has(topic));
+  const overrepresentedTopics = topicsCovered.filter((item) =>
+    item.questionCount >= 2 && item.paperSharePercent > Math.max(item.sourceSharePercent * 1.5, item.sourceSharePercent + 15),
+  );
+  const syllabusCoveragePercent = topicList.length ? topicsCovered.length / topicList.length * 100 : 0;
+  const actualMarks = questions.reduce((sum, q) => sum + q.marks, 0);
+  const missingBloomLevels = config.bloomLevels.filter((level) => !questions.some((q) => q.bloom === level));
+  const missingQuestionTypes = config.types.filter((type) => !questions.some((q) => q.type === type));
+  const issues = [
+    ...(actualMarks === config.totalMarks ? [] : [`The paper totals ${actualMarks} marks; the requested total is ${config.totalMarks}.`]),
+    ...(missingBloomLevels.length ? [`Requested Bloom levels missing: ${missingBloomLevels.join(", ")}.`] : []),
+    ...(missingQuestionTypes.length ? [`Requested question types missing: ${missingQuestionTypes.join(", ")}.`] : []),
+  ];
+  return {
+    topicsCovered,
+    importantTopicsMissing,
+    overrepresentedTopics,
+    syllabusCoveragePercent: Math.round(syllabusCoveragePercent * 10) / 10,
+    coverageNote: "Offline estimates use extracted keywords; connect the Python analysis service for semantic topic clustering and evidence verification.",
+    difficultyBalance: {
+      requestedPercent: requested,
+      actualPercent: actual,
+      balanced: (["easy", "medium", "hard"] as const).every((level) => Math.abs(actual[level] - requested[level]) <= Math.max(10, 100 / total)),
+    },
+    blueprint: {
+      requestedTotalMarks: config.totalMarks,
+      actualTotalMarks: actualMarks,
+      totalMarksMatch: actualMarks === config.totalMarks,
+      requestedBloomLevels: config.bloomLevels,
+      coveredBloomLevels: config.bloomLevels.filter((level) => !missingBloomLevels.includes(level)),
+      missingBloomLevels,
+      requestedQuestionTypes: config.types,
+      coveredQuestionTypes: config.types.filter((type) => !missingQuestionTypes.includes(type)),
+      missingQuestionTypes,
+      satisfied: issues.length === 0,
+      issues,
+    },
   };
 }
 

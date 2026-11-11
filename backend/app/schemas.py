@@ -10,6 +10,7 @@ BloomLevel = Literal["remember", "understand", "apply", "analyze", "evaluate", "
 Language = Literal["en", "hi", "ta", "te", "mr"]
 QuestionType = Literal["mcq", "fill", "descriptive"]
 Difficulty = Literal["easy", "medium", "hard"]
+EvidenceStatus = Literal["direct", "partial", "unsupported"]
 
 
 class DifficultyMix(BaseModel):
@@ -29,10 +30,17 @@ class PaperConfig(BaseModel):
     topicHint: Optional[str] = None
 
 
+class SourcePage(BaseModel):
+    page: int = Field(ge=1)
+    text: str
+
+
 class GenerateRequest(BaseModel):
     text: str
     config: PaperConfig = Field(default_factory=PaperConfig)
     title: str = "Untitled Paper"
+    sourceName: Optional[str] = None
+    sourcePages: Optional[List[SourcePage]] = None
 
 
 class GeneratedQuestion(BaseModel):
@@ -47,6 +55,10 @@ class GeneratedQuestion(BaseModel):
     keywords: Optional[List[str]] = None
     topic: Optional[str] = None
     co: Optional[str] = None
+    sourceReference: Optional[str] = None
+    sourceEvidence: Optional[str] = None
+    evidenceStatus: Optional[EvidenceStatus] = None
+    evidenceWarning: Optional[str] = None
 
 
 class GeneratedPaper(BaseModel):
@@ -56,5 +68,6 @@ class GeneratedPaper(BaseModel):
     config: PaperConfig
     questions: List[GeneratedQuestion]
     sourcePreview: str
+    coverageReport: Optional[dict] = None
     # Post-processing transparency: drafted vs kept, and why drafts were dropped.
     qualityReport: Optional[dict] = None

@@ -12,12 +12,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Wand2, FileText, Loader2, Download } from "lucide-react";
 import { BLOOM_LEVELS, LANGUAGES, type BloomLevel, type Language, type PaperConfig, type QuestionType, type GeneratedPaper } from "@/lib/types";
-import { extractText } from "@/lib/file-extract";
+import { extractDocument } from "@/lib/file-extract";
 import { generatePaper } from "@/lib/api";
 import { validateSource } from "@/lib/validate-source";
 import { PaperView } from "@/components/PaperView";
 import { useAuth } from "@/lib/auth";
 import { Link } from "@tanstack/react-router";
+import type { SourcePage } from "@/lib/types";
 
 export const Route = createFileRoute("/generate")({
   head: () => ({
@@ -38,6 +39,7 @@ function GeneratePage() {
   const [title, setTitle] = useState("Mid-semester Exam");
   const [text, setText] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
+  const [sourcePages, setSourcePages] = useState<SourcePage[]>([]);
   const [language, setLanguage] = useState<Language>("en");
   const [totalMarks, setTotalMarks] = useState(50);
   const [bloom, setBloom] = useState<BloomLevel[]>(["remember", "understand", "apply", "analyze"]);
@@ -53,9 +55,10 @@ function GeneratePage() {
     try {
       setFileName(f.name);
       toast.info(`Parsing ${f.name}…`);
-      const t = await extractText(f);
-      setText(t);
-      toast.success(`Extracted ${t.length.toLocaleString()} characters`);
+      const extracted = await extractDocument(f);
+      setText(extracted.text);
+      setSourcePages(extracted.pages ?? []);
+      toast.success(`Extracted ${extracted.text.length.toLocaleString()} characters`);
     } catch (e: any) {
       toast.error(e.message ?? "Failed to read file");
     }
@@ -84,7 +87,7 @@ function GeneratePage() {
         types,
         difficultyMix: { easy, medium, hard },
       };
-      const p = await generatePaper(text, config, title);
+      const p = await generatePaper(text, config, title, fileName ?? undefined, sourcePages);
       setPaper(p);
       toast.success(`Generated ${p.questions.length} questions`);
     } catch (e: any) {
@@ -135,7 +138,11 @@ function GeneratePage() {
               <TabsContent value="text">
                 <Textarea
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => {
+                    setText(e.target.value);
+                    setSourcePages([]);
+                    setFileName(null);
+                  }}
                   placeholder="Paste syllabus, lecture notes, chapter excerpt…"
                   className="min-h-[260px] resize-y font-mono text-sm"
                 />

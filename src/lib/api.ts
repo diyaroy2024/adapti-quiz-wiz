@@ -195,6 +195,21 @@ function mockGenerate(
     }
   }
 
+  questions.forEach((question, index) => {
+    const evidence = sentences[index % Math.max(1, sentences.length)] ?? source.slice(0, 300);
+    const topic = keywords[index % Math.max(1, keywords.length)] ?? "General";
+    question.topic ??= topic;
+    question.keywords ??= [topic];
+    question.sourceEvidence = evidence;
+    question.sourceReference = `Pasted text · paragraph ${index + 1}`;
+    if (evidence.toLowerCase().includes((question.answer ?? "").toLowerCase()) || evidence.toLowerCase().includes(topic.toLowerCase())) {
+      question.evidenceStatus = "direct";
+    } else {
+      question.evidenceStatus = "partial";
+      question.evidenceWarning = "Offline generation cannot verify the full answer against the source. Review this question.";
+    }
+  });
+
   return {
     id: crypto.randomUUID(),
     title: title || "Untitled Paper",
@@ -202,11 +217,11 @@ function mockGenerate(
     config,
     questions,
     sourcePreview: source.slice(0, 240),
-    coverageReport: mockCoverageReport(questions, config),
+    coverageReport: mockCoverageReport(questions, config, keywords),
   };
 }
 
-function mockCoverageReport(questions: GeneratedQuestion[], config: PaperConfig) {
+function mockCoverageReport(questions: GeneratedQuestion[], config: PaperConfig, sourceTopics: string[]) {
   const counts = new Map<string, number>();
   questions.forEach((question) => {
     if (question.topic) counts.set(question.topic, (counts.get(question.topic) ?? 0) + 1);
@@ -223,13 +238,24 @@ function mockCoverageReport(questions: GeneratedQuestion[], config: PaperConfig)
     medium: config.difficultyMix.medium / requestedTotal * 100,
     hard: config.difficultyMix.hard / requestedTotal * 100,
   };
-  const topicsCovered = [...counts].map(([topic, questionCount]) => ({
-    topic,
-    questionCount,
-    marks: questions.filter((q) => q.topic === topic).reduce((sum, q) => sum + q.marks, 0),
-    sourceSharePercent: 0,
-    paperSharePercent: questionCount / total * 100,
-  }));
+  const topicList = [...new Set(sourceTopics)];
+  const topicWeight = topicList.length ? 100 / topicList.length : 0;
+  const topicsCovered = topicList.flatMap((topic) => {
+    const questionCount = counts.get(topic) ?? 0;
+    if (!questionCount) return [];
+    return [{
+      topic,
+      questionCount,
+      marks: questions.filter((q) => q.topic === topic).reduce((sum, q) => sum + q.marks, 0),
+      sourceSharePercent: topicWeight,
+      paperSharePercent: questionCount / total * 100,
+    }];
+  });
+  const importantTopicsMissing = topicList.filter((topic) => !counts.has(topic));
+  const overrepresentedTopics = topicsCovered.filter((item) =>
+    item.questionCount >= 2 && item.paperSharePercent > Math.max(item.sourceSharePercent * 1.5, item.sourceSharePercent + 15),
+  );
+  const syllabusCoveragePercent = topicList.length ? topicsCovered.length / topicList.length * 100 : 0;
   const actualMarks = questions.reduce((sum, q) => sum + q.marks, 0);
   const missingBloomLevels = config.bloomLevels.filter((level) => !questions.some((q) => q.bloom === level));
   const missingQuestionTypes = config.types.filter((type) => !questions.some((q) => q.type === type));
@@ -240,10 +266,10 @@ function mockCoverageReport(questions: GeneratedQuestion[], config: PaperConfig)
   ];
   return {
     topicsCovered,
-    importantTopicsMissing: [],
-    overrepresentedTopics: [],
-    syllabusCoveragePercent: 0,
-    coverageNote: "Syllabus-wide coverage is available when the Python analysis service is connected.",
+    importantTopicsMissing,
+    overrepresentedTopics,
+    syllabusCoveragePercent: Math.round(syllabusCoveragePercent * 10) / 10,
+    coverageNote: "Offline estimates use extracted keywords; connect the Python analysis service for semantic topic clustering and evidence verification.",
     difficultyBalance: {
       requestedPercent: requested,
       actualPercent: actual,

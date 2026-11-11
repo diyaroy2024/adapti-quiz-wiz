@@ -169,6 +169,9 @@ def build_paper(req: GenerateRequest) -> GeneratedPaper:
             req.sourcePages,
         )
         q.evidenceStatus, q.evidenceWarning = evidence_status(q, evidence, embedder)
+        if q.evidenceStatus == "direct" and q.type == "descriptive":
+            q.evidenceStatus = "partial"
+            q.evidenceWarning = "The source supports the key concept, but the full descriptive expected answer needs teacher review."
 
     coverage_report = analyze_paper(selected, cfg, source_topic_weights)
 

@@ -65,7 +65,7 @@ export async function generatePaper(
     return paper;
   }
   // Local mock — deterministic-ish demo content
-  const paper = mockGenerate(source, config, title);
+  const paper = mockGenerate(source, config, title, sourceName, sourcePages);
   savePaper(paper);
   return paper;
 }
@@ -128,6 +128,8 @@ function mockGenerate(
   source: string,
   config: PaperConfig,
   title: string,
+  sourceName?: string,
+  sourcePages?: SourcePage[],
 ): GeneratedPaper {
   const sentences = source
     .replace(/\s+/g, " ")
@@ -201,13 +203,12 @@ function mockGenerate(
     question.topic ??= topic;
     question.keywords ??= [topic];
     question.sourceEvidence = evidence;
-    question.sourceReference = `Pasted text · paragraph ${index + 1}`;
-    if (evidence.toLowerCase().includes((question.answer ?? "").toLowerCase()) || evidence.toLowerCase().includes(topic.toLowerCase())) {
-      question.evidenceStatus = "direct";
-    } else {
-      question.evidenceStatus = "partial";
-      question.evidenceWarning = "Offline generation cannot verify the full answer against the source. Review this question.";
-    }
+    const pageMatch = sourcePages?.find((page) => page.text.toLowerCase().includes(evidence.toLowerCase()));
+    question.sourceReference = pageMatch
+      ? `${sourceName ? `${sourceName} · ` : ""}PDF page ${pageMatch.page}`
+      : `${sourceName ? `${sourceName} · ` : "Pasted text · "}paragraph ${index + 1}`;
+    question.evidenceStatus = "partial";
+    question.evidenceWarning = "Offline generation cannot verify the expected answer against the source. Review this question.";
   });
 
   return {

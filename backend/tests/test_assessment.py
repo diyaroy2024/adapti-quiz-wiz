@@ -1,6 +1,6 @@
 import unittest
 
-from app.assessment import allocate_marks, analyze_paper
+from app.assessment import allocate_marks, analyze_paper, evidence_status
 from app.schemas import DifficultyMix, GeneratedQuestion, PaperConfig
 
 
@@ -38,6 +38,14 @@ class AssessmentTests(unittest.TestCase):
 
         self.assertEqual(sum(item.marks for item in questions), 10)
         self.assertGreater(questions[1].marks, questions[0].marks)
+
+    def test_source_verification_flags_missing_evidence(self):
+        item = question("q1", "Photosynthesis")
+
+        status, warning = evidence_status(item, "Cellular respiration releases energy from glucose.")
+
+        self.assertEqual(status, "unsupported")
+        self.assertIsNotNone(warning)
 
 
 if __name__ == "__main__":

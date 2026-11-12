@@ -172,7 +172,7 @@ def analyze_paper(
         level: round(getattr(config.difficultyMix, level) / (requested_total or 1) * 100, 1)
         for level in DIFFICULTIES
     }
-    rounding_tolerance = max(10.0, 100.0 / question_total) if question_total else 10.0
+    rounding_tolerance = 10.0
     balanced = all(abs(actual_mix[level] - requested_mix[level]) <= rounding_tolerance for level in DIFFICULTIES)
 
     requested_bloom = list(config.bloomLevels)

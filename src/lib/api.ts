@@ -274,7 +274,7 @@ function mockCoverageReport(questions: GeneratedQuestion[], config: PaperConfig,
     difficultyBalance: {
       requestedPercent: requested,
       actualPercent: actual,
-      balanced: (["easy", "medium", "hard"] as const).every((level) => Math.abs(actual[level] - requested[level]) <= Math.max(10, 100 / total)),
+      balanced: (["easy", "medium", "hard"] as const).every((level) => Math.abs(actual[level] - requested[level]) <= 10),
     },
     blueprint: {
       requestedTotalMarks: config.totalMarks,

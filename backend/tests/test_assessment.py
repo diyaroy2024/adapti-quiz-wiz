@@ -62,6 +62,23 @@ class AssessmentTests(unittest.TestCase):
 
         self.assertEqual(reference, "Biology.pdf · PDF page 3")
 
+    def test_source_reference_identifies_nearby_section_heading(self):
+        source = "Unit 2: Plant Biology\n\nPhotosynthesis converts light energy into chemical energy."
+        evidence = "Photosynthesis converts light energy into chemical energy."
+
+        reference = source_reference(evidence, source)
+
+        self.assertEqual(reference, "Section: Unit 2: Plant Biology")
+
+    def test_source_verification_marks_partial_answer_as_partial(self):
+        item = question("q1", "Photosynthesis")
+        item.answer = "solar energy into glucose"
+
+        status, warning = evidence_status(item, "The plant stores solar energy in glucose molecules.")
+
+        self.assertEqual(status, "partial")
+        self.assertIsNotNone(warning)
+
     def test_topic_overrepresentation_is_flagged(self):
         config = PaperConfig(
             totalMarks=3,
@@ -91,6 +108,18 @@ class AssessmentTests(unittest.TestCase):
         self.assertEqual(report["blueprint"]["actualTotalMarks"], 1)
         self.assertEqual(report["blueprint"]["missingBloomLevels"], ["analyze"])
         self.assertEqual(report["blueprint"]["missingQuestionTypes"], ["descriptive"])
+
+    def test_blueprint_is_satisfied_when_requested_settings_match(self):
+        config = PaperConfig(
+            totalMarks=2,
+            bloomLevels=["remember"],
+            types=["mcq"],
+            difficultyMix=DifficultyMix(easy=100, medium=0, hard=0),
+        )
+        report = analyze_paper([question("q1", "Algebra"), question("q2", "Algebra")], config, {"Algebra": 1})
+
+        self.assertTrue(report["blueprint"]["satisfied"])
+        self.assertTrue(report["difficultyBalance"]["balanced"])
 
 
 if __name__ == "__main__":

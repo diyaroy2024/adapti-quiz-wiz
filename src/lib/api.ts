@@ -257,9 +257,11 @@ function mockCoverageReport(questions: GeneratedQuestion[], config: PaperConfig,
   );
   const syllabusCoveragePercent = topicList.length ? topicsCovered.length / topicList.length * 100 : 0;
   const actualMarks = questions.reduce((sum, q) => sum + q.marks, 0);
+  const questionCountMatches = questions.length === config.questionCount;
   const missingBloomLevels = config.bloomLevels.filter((level) => !questions.some((q) => q.bloom === level));
   const missingQuestionTypes = config.types.filter((type) => !questions.some((q) => q.type === type));
   const issues = [
+    ...(questionCountMatches ? [] : [`The paper contains ${questions.length} questions; ${config.questionCount} were requested.`]),
     ...(actualMarks === config.totalMarks ? [] : [`The paper totals ${actualMarks} marks; the requested total is ${config.totalMarks}.`]),
     ...(missingBloomLevels.length ? [`Requested Bloom levels missing: ${missingBloomLevels.join(", ")}.`] : []),
     ...(missingQuestionTypes.length ? [`Requested question types missing: ${missingQuestionTypes.join(", ")}.`] : []),

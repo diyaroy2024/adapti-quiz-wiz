@@ -2,6 +2,7 @@ import unittest
 
 from app.assessment import allocate_marks, analyze_paper, evidence_status, source_reference
 from app.schemas import DifficultyMix, GeneratedQuestion, PaperConfig, SourcePage
+from app.nlp import human_style_fallback
 
 
 def question(question_id, topic, difficulty="easy", marks=1):
@@ -38,6 +39,28 @@ class AssessmentTests(unittest.TestCase):
 
         self.assertEqual(sum(item.marks for item in questions), 10)
         self.assertGreater(questions[1].marks, questions[0].marks)
+
+    def test_custom_marking_scheme_sets_each_question_value(self):
+        questions = [question("q1", "Algebra"), question("q2", "Geometry"), question("q3", "Calculus")]
+
+        allocate_marks(questions, 20, [10, 5, 5])
+
+        self.assertEqual([item.marks for item in questions], [10, 5, 5])
+
+    def test_config_derives_total_marks_from_each_question(self):
+        config = PaperConfig(questionCount=3, marksPerQuestion=[10, 5, 5])
+
+        self.assertEqual(config.totalMarks, 20)
+
+    def test_config_rejects_mark_scheme_with_wrong_question_count(self):
+        with self.assertRaises(ValueError):
+            PaperConfig(questionCount=3, marksPerQuestion=[10, 5])
+
+    def test_teacher_style_fallback_does_not_start_with_bloom_command(self):
+        stem = human_style_fallback("NIST", "NIST is a widely recognized reference model.", "apply", "descriptive")
+
+        self.assertEqual(stem, 'How could “NIST” be used in the situation described in the passage?')
+        self.assertNotIn("Apply the concept", stem)
 
     def test_source_verification_flags_missing_evidence(self):
         item = question("q1", "Photosynthesis")

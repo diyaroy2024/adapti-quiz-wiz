@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,15 +40,24 @@ function GeneratePage() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [sourcePages, setSourcePages] = useState<SourcePage[]>([]);
   const [language, setLanguage] = useState<Language>("en");
-  const [totalMarks, setTotalMarks] = useState(50);
+  const [questionCount, setQuestionCount] = useState(10);
+  const [marksPerQuestion, setMarksPerQuestion] = useState<number[]>(Array(10).fill(5));
   const [bloom, setBloom] = useState<BloomLevel[]>(["remember", "understand", "apply", "analyze"]);
   const [types, setTypes] = useState<QuestionType[]>(["mcq", "fill", "descriptive"]);
   const [easy, setEasy] = useState(40);
   const [medium, setMedium] = useState(40);
   const [generating, setGenerating] = useState(false);
   const [paper, setPaper] = useState<GeneratedPaper | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const hard = Math.max(0, 100 - easy - medium);
+  const totalMarks = marksPerQuestion.reduce((sum, marks) => sum + marks, 0);
+
+  function changeQuestionCount(rawValue: string) {
+    const nextCount = Math.max(1, Math.min(50, Number.parseInt(rawValue, 10) || 1));
+    setQuestionCount(nextCount);
+    setMarksPerQuestion((current) => Array.from({ length: nextCount }, (_, index) => current[index] ?? 5));
+  }
 
   async function onFile(f: File) {
     try {
@@ -82,12 +91,15 @@ function GeneratePage() {
       const config: PaperConfig = {
         language,
         totalMarks,
+        questionCount,
+        marksPerQuestion,
         bloomLevels: bloom,
         types,
         difficultyMix: { easy, medium, hard },
       };
       const p = await generatePaper(text, config, title, fileName ?? undefined, sourcePages);
       setPaper(p);
+      window.requestAnimationFrame(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
       toast.success(`Generated ${p.questions.length} questions`);
     } catch (e: any) {
       toast.error(e.message ?? "Generation failed");
@@ -186,9 +198,34 @@ function GeneratePage() {
                 </Select>
               </div>
               <div>
-                <Label>Total marks</Label>
-                <Input type="number" min={10} max={200} value={totalMarks}
-                  onChange={(e) => setTotalMarks(parseInt(e.target.value) || 50)} className="mt-2" />
+                <Label htmlFor="question-count">Number of questions</Label>
+                <Input id="question-count" type="number" min={1} max={50} value={questionCount}
+                  onChange={(e) => changeQuestionCount(e.target.value)} className="mt-2" />
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <Label>Marks per question</Label>
+                <span className="text-sm font-medium text-primary">Total: {totalMarks} marks</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {marksPerQuestion.map((marks, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <span className="w-9 shrink-0 text-xs text-muted-foreground">Q{index + 1}</span>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={100}
+                      aria-label={`Marks for question ${index + 1}`}
+                      value={marks}
+                      onChange={(event) => {
+                        const nextMarks = Math.max(1, Math.min(100, Number.parseInt(event.target.value, 10) || 1));
+                        setMarksPerQuestion((current) => current.map((value, markIndex) => markIndex === index ? nextMarks : value));
+                      }}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -266,10 +303,11 @@ function GeneratePage() {
       </div>
 
       {paper && (
-        <div className="mt-12">
+        <div ref={resultsRef} id="paper-results" className="mt-12 scroll-mt-6">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-semibold">{paper.title}</h2>
+              <h2 className="text-2xl font-semibold">Your generated paper & assessment</h2>
+              <p className="mt-1 text-muted-foreground">{paper.title}</p>
               <div className="mt-1 flex flex-wrap gap-2">
                 <Badge variant="secondary">{paper.questions.length} questions</Badge>
                 <Badge variant="secondary">{paper.config.totalMarks} marks</Badge>

@@ -140,7 +140,7 @@ function mockGenerate(
 
   const keywords = extractKeywords(source).slice(0, 30);
   const questions: GeneratedQuestion[] = [];
-  const targetCount = Math.max(5, Math.min(20, Math.floor(config.totalMarks / 2)));
+  const targetCount = config.questionCount;
   const { easy, medium, hard } = config.difficultyMix;
   const bag: ("easy" | "medium" | "hard")[] = [];
   for (let i = 0; i < easy; i++) bag.push("easy");
@@ -151,7 +151,7 @@ function mockGenerate(
     const type = config.types[i % config.types.length];
     const bloom = config.bloomLevels[i % config.bloomLevels.length];
     const difficulty = bag[Math.floor((i / targetCount) * bag.length)] ?? "medium";
-    const marks = difficulty === "easy" ? 1 : difficulty === "medium" ? 3 : 5;
+    const marks = config.marksPerQuestion[i] ?? (difficulty === "easy" ? 1 : difficulty === "medium" ? 3 : 5);
     const sent = sentences[i % Math.max(1, sentences.length)] ?? "the given concept";
     const kw = keywords[i % Math.max(1, keywords.length)] ?? "concept";
 
@@ -167,7 +167,7 @@ function mockGenerate(
         bloom,
         difficulty,
         marks,
-        question: translate(`Which term best relates to: "${truncate(sent, 110)}"?`, config.language),
+        question: translate(mockClozeQuestion(sent, kw), config.language),
         options: shuffle([kw, ...distractors]),
         answer: kw,
       });
@@ -183,14 +183,13 @@ function mockGenerate(
         answer: kw,
       });
     } else {
-      const verb = bloomVerb(bloom);
       questions.push({
         id: crypto.randomUUID(),
         type,
         bloom,
         difficulty,
         marks,
-        question: translate(`${verb} the concept of "${kw}" with reference to: ${truncate(sent, 140)}`, config.language),
+        question: translate(mockDescriptiveQuestion(bloom, kw), config.language),
         answer: `Refer to source. Key term: ${kw}.`,
         keywords: [kw],
       });
@@ -258,9 +257,11 @@ function mockCoverageReport(questions: GeneratedQuestion[], config: PaperConfig,
   );
   const syllabusCoveragePercent = topicList.length ? topicsCovered.length / topicList.length * 100 : 0;
   const actualMarks = questions.reduce((sum, q) => sum + q.marks, 0);
+  const questionCountMatches = questions.length === config.questionCount;
   const missingBloomLevels = config.bloomLevels.filter((level) => !questions.some((q) => q.bloom === level));
   const missingQuestionTypes = config.types.filter((type) => !questions.some((q) => q.type === type));
   const issues = [
+    ...(questionCountMatches ? [] : [`The paper contains ${questions.length} questions; ${config.questionCount} were requested.`]),
     ...(actualMarks === config.totalMarks ? [] : [`The paper totals ${actualMarks} marks; the requested total is ${config.totalMarks}.`]),
     ...(missingBloomLevels.length ? [`Requested Bloom levels missing: ${missingBloomLevels.join(", ")}.`] : []),
     ...(missingQuestionTypes.length ? [`Requested question types missing: ${missingQuestionTypes.join(", ")}.`] : []),
@@ -277,6 +278,9 @@ function mockCoverageReport(questions: GeneratedQuestion[], config: PaperConfig,
       balanced: (["easy", "medium", "hard"] as const).every((level) => Math.abs(actual[level] - requested[level]) <= 10),
     },
     blueprint: {
+      requestedQuestionCount: config.questionCount,
+      actualQuestionCount: questions.length,
+      questionCountMatch: questions.length === config.questionCount,
       requestedTotalMarks: config.totalMarks,
       actualTotalMarks: actualMarks,
       totalMarksMatch: actualMarks === config.totalMarks,
@@ -318,15 +322,21 @@ function extractKeywords(text: string): string[] {
     .forEach((w) => counts.set(w, (counts.get(w) ?? 0) + 1));
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).map((e) => e[0]);
 }
-function bloomVerb(b: string) {
-  return {
-    remember: "Define",
-    understand: "Explain",
-    apply: "Apply",
-    analyze: "Analyze",
-    evaluate: "Evaluate",
-    create: "Design",
-  }[b] ?? "Discuss";
+function mockClozeQuestion(sentence: string, keyword: string) {
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const statement = sentence.replace(new RegExp(escaped, "i"), "_____").replace(/[.?!]+$/, "");
+  return `According to the passage, which term completes this statement: “${truncate(statement, 110)}”?`;
+}
+function mockDescriptiveQuestion(level: string, keyword: string) {
+  const stems: Record<string, string> = {
+    remember: `According to the passage, what is stated about “${keyword}”`,
+    understand: `How does the passage explain the role of “${keyword}”`,
+    apply: `How could “${keyword}” be used in the situation described in the passage`,
+    analyze: `What role does “${keyword}” play in the process described in the passage`,
+    evaluate: `Which evidence in the passage supports the importance of “${keyword}”`,
+    create: `What approach could be developed using “${keyword}”, based on the passage`,
+  };
+  return `${stems[level] ?? stems.understand}?`;
 }
 function translate(s: string, lang: string) {
   if (lang === "en") return s;

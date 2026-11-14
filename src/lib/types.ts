@@ -72,6 +72,9 @@ export interface CoverageReport {
     balanced: boolean;
   };
   blueprint: {
+    requestedQuestionCount: number;
+    actualQuestionCount: number;
+    questionCountMatch: boolean;
     requestedTotalMarks: number;
     actualTotalMarks: number;
     totalMarksMatch: boolean;
@@ -89,6 +92,8 @@ export interface CoverageReport {
 export interface PaperConfig {
   language: Language;
   totalMarks: number;
+  questionCount: number;
+  marksPerQuestion: number[];
   bloomLevels: BloomLevel[];
   types: QuestionType[];
   // adaptive split: percentages summing to 100

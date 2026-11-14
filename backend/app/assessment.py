@@ -11,9 +11,18 @@ DIFFICULTIES = ("easy", "medium", "hard")
 _MARK_WEIGHTS = {"easy": 1, "medium": 3, "hard": 5}
 
 
-def allocate_marks(questions: Sequence[GeneratedQuestion], total_marks: int) -> None:
+def allocate_marks(
+    questions: Sequence[GeneratedQuestion],
+    total_marks: int,
+    marks_per_question: Optional[Sequence[int]] = None,
+) -> None:
     """Allocate the requested mark budget while preserving difficulty weighting."""
     if not questions:
+        return
+
+    if marks_per_question and len(marks_per_question) == len(questions):
+        for question, marks in zip(questions, marks_per_question):
+            question.marks = marks
         return
 
     remaining = max(0, total_marks - len(questions))
@@ -183,10 +192,13 @@ def analyze_paper(
     missing_types = [kind for kind in requested_types if kind not in actual_types]
     actual_marks = sum(question.marks for question in questions)
     marks_match = actual_marks == config.totalMarks
+    count_match = len(questions) == config.questionCount
 
     issues = []
     if not marks_match:
         issues.append(f"The paper totals {actual_marks} marks; the requested total is {config.totalMarks}.")
+    if not count_match:
+        issues.append(f"The paper contains {len(questions)} questions; {config.questionCount} were requested.")
     if missing_bloom:
         issues.append("Requested Bloom levels missing: " + ", ".join(missing_bloom) + ".")
     if missing_types:
@@ -206,6 +218,9 @@ def analyze_paper(
             "balanced": balanced,
         },
         "blueprint": {
+            "requestedQuestionCount": config.questionCount,
+            "actualQuestionCount": len(questions),
+            "questionCountMatch": count_match,
             "requestedTotalMarks": config.totalMarks,
             "actualTotalMarks": actual_marks,
             "totalMarksMatch": marks_match,

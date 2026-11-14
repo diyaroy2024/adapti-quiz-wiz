@@ -267,17 +267,46 @@ def bloom_question(concept: str, context: str, level: str, qtype: str) -> str:
     try:
         if qtype == "mcq" or level in ("remember", "understand"):
             q = t5_question(context, concept)
-            if q and q.endswith("?"):
+            if q and q.endswith("?") and _is_teacher_natural_question(q):
                 return q
         stem = bart_condense(context)
         prompt = BLOOM_PROMPTS.get(level, BLOOM_PROMPTS["understand"]).format(kw=concept)
         q = _generate(*get_qg(), f"{prompt} Context: {stem} </s>")
-        if q and len(q) > 15:
+        if q and len(q) > 15 and _is_teacher_natural_question(q):
             return q
     except Exception:
         pass
-    # Deterministic template fallback keeps the endpoint reliable without GPUs.
-    return f"{verb_for(level)} the concept of \"{concept}\" with reference to: {context[:150]}"
+    return human_style_fallback(concept, context, level, qtype)
+
+
+def _is_teacher_natural_question(question: str) -> bool:
+    text = question.strip().casefold()
+    awkward_leads = (
+        "apply the concept", "analyze the concept", "analyse the concept",
+        "evaluate the concept", "understand the concept", "remember the concept",
+        "create the concept", "with reference to:", "according to context:",
+    )
+    return not any(text.startswith(prefix) or prefix in text for prefix in awkward_leads)
+
+
+def human_style_fallback(concept: str, context: str, level: str, qtype: str) -> str:
+    """Create a source-led, exam-style stem if a language model draft is awkward."""
+    if qtype == "mcq":
+        match = re.search(re.escape(concept), context, flags=re.IGNORECASE)
+        if match:
+            statement = context[:match.start()] + "_____" + context[match.end():]
+            statement = statement.strip().rstrip(".?! ")
+            return f'According to the passage, which term completes this statement: “{statement}”?'
+
+    prompts = {
+        "remember": f'According to the passage, what is stated about “{concept}”',
+        "understand": f'How does the passage explain the role of “{concept}”',
+        "apply": f'How could “{concept}” be used in the situation described in the passage',
+        "analyze": f'What role does “{concept}” play in the process described in the passage',
+        "evaluate": f'Which evidence in the passage supports the importance of “{concept}”',
+        "create": f'What approach could be developed using “{concept}”, based on the passage',
+    }
+    return f'{prompts.get(level, prompts["understand"])}?'
 
 
 def fill_in_the_blank(context: str, concept: str) -> str:

@@ -12,16 +12,17 @@ export function PaperView({ paper }: { paper: GeneratedPaper }) {
 
   return (
     <div className="space-y-6">
-      {report && <section aria-labelledby="paper-assessment-title" className="border-y border-border py-5">
+      <section aria-labelledby="paper-assessment-title" className="border-y border-border py-5">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
             <h3 id="paper-assessment-title" className="font-semibold">Syllabus & blueprint assessment</h3>
             <p className="mt-1 text-sm text-muted-foreground">Estimated topic coverage and checks against the selected examination settings.</p>
           </div>
-          <Badge variant={report.blueprint.satisfied ? "secondary" : "outline"}>
+          {report && <Badge variant={report.blueprint.satisfied ? "secondary" : "outline"}>
             {report.blueprint.satisfied ? "Blueprint satisfied" : "Review blueprint"}
-          </Badge>
+          </Badge>}
         </div>
+        {report ? <>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <AssessmentStat label="Syllabus assessed" value={`${report.syllabusCoveragePercent}%`} />
           <AssessmentStat label="Difficulty" value={report.difficultyBalance.balanced ? "Balanced" : "Needs review"} />
@@ -37,7 +38,8 @@ export function PaperView({ paper }: { paper: GeneratedPaper }) {
         {!report.blueprint.satisfied && <ul className="mt-4 space-y-1 text-sm text-muted-foreground">
           {report.blueprint.issues.map((issue) => <li key={issue}>{issue}</li>)}
         </ul>}
-      </section>}
+        </> : <p className="text-sm text-muted-foreground">This paper does not contain an assessment report. Generate it again using the updated service to see syllabus coverage and blueprint checks.</p>}
+      </section>
 
       <div className="space-y-4">
       {paper.questions.map((q, i) => {

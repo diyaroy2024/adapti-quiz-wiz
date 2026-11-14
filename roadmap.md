@@ -1,4 +1,4 @@
-- [x] Add source page/section references and evidence verification to generated questions.
-- [x] Analyze topic coverage, difficulty balance, and examination blueprint compliance.
-- [x] Show source evidence and assessment results on generated and saved papers.
-- [x] Test assessment calculations and verify the application preview.
+- [ ] Make generated results and syllabus assessment easy to find after generation.
+- [ ] Let teachers set question count and marks for each question.
+- [ ] Replace awkward Bloom-command question templates with natural teacher-style stems.
+- [ ] Test requested question counts, custom marks, and question wording; verify the preview.

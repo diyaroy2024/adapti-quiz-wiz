@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 BloomLevel = Literal["remember", "understand", "apply", "analyze", "evaluate", "create"]
 Language = Literal["en", "hi", "ta", "te", "mr"]
@@ -22,12 +22,24 @@ class DifficultyMix(BaseModel):
 class PaperConfig(BaseModel):
     language: Language = "en"
     totalMarks: int = 50
+    questionCount: int = Field(default=10, ge=1, le=50)
+    marksPerQuestion: List[int] = Field(default_factory=list, max_length=50)
     bloomLevels: List[BloomLevel] = Field(
         default_factory=lambda: ["remember", "understand", "apply"]
     )
     types: List[QuestionType] = Field(default_factory=lambda: ["mcq", "fill", "descriptive"])
     difficultyMix: DifficultyMix = Field(default_factory=DifficultyMix)
     topicHint: Optional[str] = None
+
+    @model_validator(mode="after")
+    def sync_marking_scheme(self):
+        if self.marksPerQuestion:
+            if len(self.marksPerQuestion) != self.questionCount:
+                raise ValueError("marksPerQuestion must contain one mark value for each question")
+            if any(mark < 1 or mark > 100 for mark in self.marksPerQuestion):
+                raise ValueError("Each question must be worth between 1 and 100 marks")
+            self.totalMarks = sum(self.marksPerQuestion)
+        return self
 
 
 class SourcePage(BaseModel):

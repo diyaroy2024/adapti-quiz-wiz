@@ -81,7 +81,7 @@ def build_paper(req: GenerateRequest) -> GeneratedPaper:
         topic, _ = index.topic_for(concept)
         source_topic_weights[topic] = source_topic_weights.get(topic, 0) + 1
 
-    target_count = max(5, min(25, cfg.totalMarks // 2))
+    target_count = cfg.questionCount
     draft_count = int(target_count * OVERSHOOT) + 2
     bag = _difficulty_bag(cfg.difficultyMix, draft_count)
     types = cfg.types or ["mcq", "fill", "descriptive"]
@@ -156,7 +156,7 @@ def build_paper(req: GenerateRequest) -> GeneratedPaper:
         selected.append(match)
     if not selected:
         selected = kept[:target_count]
-    allocate_marks(selected, cfg.totalMarks)
+    allocate_marks(selected, cfg.totalMarks, cfg.marksPerQuestion or None)
     report["final"] = len(selected)
 
     # Verify the original English answer before any requested translation.

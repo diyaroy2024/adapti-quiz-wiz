@@ -46,9 +46,10 @@ export async function generatePaper(
   title: string,
   sourceName?: string,
   sourcePages?: SourcePage[],
+  localOnly = false,
 ): Promise<GeneratedPaper> {
   const url = apiBase();
-  if (url) {
+  if (url && !localOnly) {
     const res = await fetch(`${url}/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },

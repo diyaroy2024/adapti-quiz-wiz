@@ -59,8 +59,14 @@ class AssessmentTests(unittest.TestCase):
     def test_teacher_style_fallback_does_not_start_with_bloom_command(self):
         stem = human_style_fallback("NIST", "NIST is a widely recognized reference model.", "apply", "descriptive")
 
-        self.assertEqual(stem, 'How could “NIST” be used in the situation described in the passage?')
+        self.assertIn("A team is choosing a reference model", stem)
+        self.assertIn("NIST is a widely recognized reference model", stem)
         self.assertNotIn("Apply the concept", stem)
+
+    def test_teacher_style_mcq_fallback_blanks_the_supported_answer(self):
+        stem = human_style_fallback("NIST", "NIST is the reference model used by the team.", "remember", "mcq")
+
+        self.assertEqual(stem, 'Complete the statement using the source: “_____ is the reference model used by the team.”')
 
     def test_source_verification_flags_missing_evidence(self):
         item = question("q1", "Photosynthesis")
@@ -129,6 +135,9 @@ class AssessmentTests(unittest.TestCase):
         self.assertFalse(report["difficultyBalance"]["balanced"])
         self.assertFalse(report["blueprint"]["satisfied"])
         self.assertEqual(report["blueprint"]["actualTotalMarks"], 1)
+        self.assertEqual(report["blueprint"]["requestedQuestionCount"], 10)
+        self.assertEqual(report["blueprint"]["actualQuestionCount"], 1)
+        self.assertFalse(report["blueprint"]["questionCountMatch"])
         self.assertEqual(report["blueprint"]["missingBloomLevels"], ["analyze"])
         self.assertEqual(report["blueprint"]["missingQuestionTypes"], ["descriptive"])
 

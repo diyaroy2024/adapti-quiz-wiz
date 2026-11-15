@@ -20,10 +20,11 @@ def allocate_marks(
     if not questions:
         return
 
-    if marks_per_question and len(marks_per_question) == len(questions):
+    if marks_per_question:
         for question, marks in zip(questions, marks_per_question):
             question.marks = marks
-        return
+        if len(marks_per_question) >= len(questions):
+            return
 
     remaining = max(0, total_marks - len(questions))
     weights = [_MARK_WEIGHTS.get(q.difficulty, 3) for q in questions]

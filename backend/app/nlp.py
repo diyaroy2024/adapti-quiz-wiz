@@ -296,17 +296,22 @@ def human_style_fallback(concept: str, context: str, level: str, qtype: str) -> 
         if match:
             statement = context[:match.start()] + "_____" + context[match.end():]
             statement = statement.strip().rstrip(".?! ")
-            return f'According to the passage, which term completes this statement: “{statement}”?'
+            return f'Complete the statement using the source: “{statement}.”'
 
     prompts = {
-        "remember": f'According to the passage, what is stated about “{concept}”',
-        "understand": f'How does the passage explain the role of “{concept}”',
-        "apply": f'How could “{concept}” be used in the situation described in the passage',
-        "analyze": f'What role does “{concept}” play in the process described in the passage',
-        "evaluate": f'Which evidence in the passage supports the importance of “{concept}”',
-        "create": f'What approach could be developed using “{concept}”, based on the passage',
+        "remember": f'According to the source, what does it identify as the widely used reference model?',
+        "understand": f'Why does the source describe “{concept}” as important in this context?',
+        "apply": f'A team is choosing a reference model. Based on the source, which model should it consider, and what detail supports your choice?',
+        "analyze": f'What does the source’s description of “{concept}” suggest about its role?',
+        "evaluate": f'Assess the significance of “{concept}”, using the source’s description as evidence.',
+        "create": f'Propose one way a team could use “{concept}”, explaining how your proposal relates to the source.',
     }
-    return f'{prompts.get(level, prompts["understand"])}?'
+    statement = context.strip().rstrip(".?! ")
+    if statement:
+        lead = f'The source states, “{statement}.” '
+    else:
+        lead = ""
+    return f'{lead}{prompts.get(level, prompts["understand"])}'
 
 
 def fill_in_the_blank(context: str, concept: str) -> str:

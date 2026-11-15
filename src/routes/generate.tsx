@@ -73,10 +73,6 @@ function GeneratePage() {
   }
 
   async function onGenerate() {
-    if (backendConfigured && !user) {
-      toast.error("Sign in to generate and save papers");
-      return;
-    }
     const check = validateSource(text);
     if (!check.ok) {
       toast.error("Irrelevant source material", { description: check.reason });
@@ -97,10 +93,13 @@ function GeneratePage() {
         types,
         difficultyMix: { easy, medium, hard },
       };
-      const p = await generatePaper(text, config, title, fileName ?? undefined, sourcePages);
+      const localOnly = backendConfigured && !user;
+      const p = await generatePaper(text, config, title, fileName ?? undefined, sourcePages, localOnly);
       setPaper(p);
       window.requestAnimationFrame(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
-      toast.success(`Generated ${p.questions.length} questions`);
+      toast.success(localOnly ? `Generated ${p.questions.length} preview questions` : `Generated ${p.questions.length} questions`, {
+        description: localOnly ? "This local demo does not use the Python question-generation service." : undefined,
+      });
     } catch (e: any) {
       toast.error(e.message ?? "Generation failed");
     } finally {
@@ -122,7 +121,7 @@ function GeneratePage() {
       {backendConfigured && !user && (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed border-border p-4">
           <p className="text-sm text-muted-foreground">
-            Sign in to generate papers and keep them saved to your account.
+            Preview mode: you can generate a local demo paper now. Sign in to use the Python service and save papers to your account.
           </p>
           <Link to="/auth">
             <Button size="sm" className="bg-gradient-primary text-primary-foreground">Sign in</Button>
@@ -303,7 +302,7 @@ function GeneratePage() {
       </div>
 
       {paper && (
-        <div ref={resultsRef} id="paper-results" className="mt-12 scroll-mt-6">
+        <div ref={resultsRef} id="paper-results" className="mt-12 scroll-mt-24">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-semibold">Your generated paper & assessment</h2>

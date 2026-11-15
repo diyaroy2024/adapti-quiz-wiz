@@ -4,6 +4,7 @@ Sentence Transformers embeddings."""
 
 from __future__ import annotations
 
+import re
 from typing import Dict, List
 
 import numpy as np
@@ -51,12 +52,12 @@ MARKS_BY_DIFFICULTY: Dict[str, int] = {"easy": 1, "medium": 3, "hard": 5}
 
 # Prompt scaffolds fed to the T5/BART generator per Bloom level.
 BLOOM_PROMPTS: Dict[str, str] = {
-    "remember": "Write one short factual exam question that asks the student to recall the definition of '{kw}'.",
-    "understand": "Write one exam question asking the student to explain the concept of '{kw}' in their own words.",
-    "apply": "Write one exam question asking the student to apply '{kw}' to a practical situation.",
-    "analyze": "Write one exam question asking the student to analyse or compare aspects of '{kw}'.",
-    "evaluate": "Write one exam question asking the student to critically evaluate or justify the use of '{kw}'.",
-    "create": "Write one exam question asking the student to design or propose something new using '{kw}'.",
+    "remember": "Write one concise university exam question that assesses recall of the key idea, without mentioning Bloom's taxonomy.",
+    "understand": "Write one clear university exam question that checks understanding of the key idea, without a generic instruction preface.",
+    "apply": "Write one practical university exam question that asks the student to use the source concept in a concrete situation.",
+    "analyze": "Write one university exam question that asks the student to examine a relationship, contrast, or step in the source.",
+    "evaluate": "Write one university exam question that asks for a justified judgment supported by evidence from the source.",
+    "create": "Write one university exam question that asks the student to propose a coherent solution grounded in the source.",
 }
 
 

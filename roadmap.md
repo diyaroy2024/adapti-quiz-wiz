@@ -1,4 +1,4 @@
 - [x] Make generated results and syllabus assessment easy to find after generation.
 - [x] Let teachers set question count and marks for each question.
 - [x] Replace awkward Bloom-command question templates with natural teacher-style stems.
-- [ ] Test requested question counts, custom marks, and question wording; verify the preview.
+- [x] Test requested question counts, custom marks, and question wording; verify the preview.

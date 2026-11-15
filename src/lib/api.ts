@@ -140,6 +140,7 @@ function mockGenerate(
     .slice(0, 40);
 
   const keywords = extractKeywords(source).slice(0, 30);
+  const sourceTopics = [...new Set(sentences.map(mockTopicLabel).filter(Boolean))].slice(0, 8);
   const questions: GeneratedQuestion[] = [];
   const targetCount = config.questionCount;
   const { easy, medium, hard } = config.difficultyMix;
@@ -154,7 +155,8 @@ function mockGenerate(
     const difficulty = bag[Math.floor((i / targetCount) * bag.length)] ?? "medium";
     const marks = config.marksPerQuestion[i] ?? (difficulty === "easy" ? 1 : difficulty === "medium" ? 3 : 5);
     const sent = sentences[i % Math.max(1, sentences.length)] ?? "the given concept";
-    const kw = keywords[i % Math.max(1, keywords.length)] ?? "concept";
+    const sentenceKeywords = extractKeywords(sent);
+    const kw = sentenceKeywords[0] ?? keywords[i % Math.max(1, keywords.length)] ?? "concept";
 
     if (type === "mcq") {
       const distractors = keywords
@@ -199,7 +201,7 @@ function mockGenerate(
 
   questions.forEach((question, index) => {
     const evidence = sentences[index % Math.max(1, sentences.length)] ?? source.slice(0, 300);
-    const topic = keywords[index % Math.max(1, keywords.length)] ?? "General";
+    const topic = sourceTopics[index % Math.max(1, sourceTopics.length)] ?? mockTopicLabel(evidence) ?? "General";
     question.topic ??= topic;
     question.keywords ??= [topic];
     question.sourceEvidence = evidence;
@@ -218,7 +220,7 @@ function mockGenerate(
     config,
     questions,
     sourcePreview: source.slice(0, 240),
-    coverageReport: mockCoverageReport(questions, config, keywords),
+    coverageReport: mockCoverageReport(questions, config, sourceTopics),
   };
 }
 
@@ -323,10 +325,18 @@ function extractKeywords(text: string): string[] {
     .forEach((w) => counts.set(w, (counts.get(w) ?? 0) + 1));
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).map((e) => e[0]);
 }
+function mockTopicLabel(sentence: string): string {
+  const stop = new Set(
+    "a an the and or of to in is are was were be been being for on with as by at from this that these those it its their our your we you they i he she has have had do does did not no so if then than which who whom whose what where when why how all whose using into across within against opposite controls updates moving selects influences describes penalizes penalize reduce reduces helps help construct constructs supports support performs performs involves based".split(" "),
+  );
+  const words = sentence.match(/[A-Za-z][A-Za-z-]{2,}/g) ?? [];
+  const keyWords = words.filter((word) => !stop.has(word.toLowerCase()));
+  return keyWords.slice(0, 2).join(" ") || keyWords[0] || "";
+}
 function mockClozeQuestion(sentence: string, keyword: string) {
   const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const statement = sentence.replace(new RegExp(escaped, "i"), "_____").replace(/[.?!]+$/, "");
-  return `According to the passage, which term completes this statement: “${truncate(statement, 110)}”?`;
+  const statement = sentence.replace(new RegExp(`\\b${escaped}\\b`, "i"), "_____").replace(/[.?!]+$/, "");
+  return `Complete the statement using the source: “${truncate(statement, 110)}.”`;
 }
 function mockDescriptiveQuestion(level: string, keyword: string) {
   const stems: Record<string, string> = {

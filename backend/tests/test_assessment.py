@@ -63,6 +63,11 @@ class AssessmentTests(unittest.TestCase):
         self.assertIn("NIST is a widely recognized reference model", stem)
         self.assertNotIn("Apply the concept", stem)
 
+    def test_teacher_style_mcq_fallback_blanks_the_supported_answer(self):
+        stem = human_style_fallback("NIST", "NIST is the reference model used by the team.", "remember", "mcq")
+
+        self.assertEqual(stem, 'Complete the statement using the source: “_____ is the reference model used by the team.”')
+
     def test_source_verification_flags_missing_evidence(self):
         item = question("q1", "Photosynthesis")
 

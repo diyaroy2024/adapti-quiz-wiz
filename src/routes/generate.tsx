@@ -302,7 +302,7 @@ function GeneratePage() {
       </div>
 
       {paper && (
-        <div ref={resultsRef} id="paper-results" className="mt-12 scroll-mt-6">
+        <div ref={resultsRef} id="paper-results" className="mt-12 scroll-mt-24">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-semibold">Your generated paper & assessment</h2>

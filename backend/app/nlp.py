@@ -296,7 +296,7 @@ def human_style_fallback(concept: str, context: str, level: str, qtype: str) -> 
         if match:
             statement = context[:match.start()] + "_____" + context[match.end():]
             statement = statement.strip().rstrip(".?! ")
-            return f'According to the passage, which term completes this statement: “{statement}”?'
+            return f'Complete the statement using the source: “{statement}.”'
 
     prompts = {
         "remember": f'According to the source, what does it identify as the widely used reference model?',

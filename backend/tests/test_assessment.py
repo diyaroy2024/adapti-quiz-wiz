@@ -129,6 +129,9 @@ class AssessmentTests(unittest.TestCase):
         self.assertFalse(report["difficultyBalance"]["balanced"])
         self.assertFalse(report["blueprint"]["satisfied"])
         self.assertEqual(report["blueprint"]["actualTotalMarks"], 1)
+        self.assertEqual(report["blueprint"]["requestedQuestionCount"], 10)
+        self.assertEqual(report["blueprint"]["actualQuestionCount"], 1)
+        self.assertFalse(report["blueprint"]["questionCountMatch"])
         self.assertEqual(report["blueprint"]["missingBloomLevels"], ["analyze"])
         self.assertEqual(report["blueprint"]["missingQuestionTypes"], ["descriptive"])
 

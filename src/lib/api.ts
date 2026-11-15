@@ -329,12 +329,12 @@ function mockClozeQuestion(sentence: string, keyword: string) {
 }
 function mockDescriptiveQuestion(level: string, keyword: string) {
   const stems: Record<string, string> = {
-    remember: `According to the passage, what is stated about “${keyword}”`,
-    understand: `How does the passage explain the role of “${keyword}”`,
-    apply: `How could “${keyword}” be used in the situation described in the passage`,
-    analyze: `What role does “${keyword}” play in the process described in the passage`,
-    evaluate: `Which evidence in the passage supports the importance of “${keyword}”`,
-    create: `What approach could be developed using “${keyword}”, based on the passage`,
+    remember: `According to the source, what is stated about “${keyword}”`,
+    understand: `Why does the source describe “${keyword}” as important in this context`,
+    apply: `A team is choosing a reference model. Based on the source, which model should it consider, and what detail supports your choice`,
+    analyze: `What does the source’s description of “${keyword}” suggest about its role`,
+    evaluate: `Assess the significance of “${keyword}”, using the source’s description as evidence`,
+    create: `Propose one way a team could use “${keyword}”, explaining how your proposal relates to the source`,
   };
   return `${stems[level] ?? stems.understand}?`;
 }

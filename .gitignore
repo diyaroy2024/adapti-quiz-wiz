@@ -35,3 +35,8 @@ dist-ssr
 .env
 backend/.env
 *.env.local
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
